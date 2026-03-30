@@ -1,0 +1,3288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local LLM Course: Zero to Production</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-secondary: #161b22;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-green: #3fb950;
+            --border: #30363d;
+            --code-bg: #161b22;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1, h2, h3, h4 {
+            color: #ffffff;
+            margin: 2rem 0 1rem;
+            font-weight: 600;
+        }
+        
+        h1 { font-size: 2.5rem; margin-top: 0; color: #58a6ff; }
+        h2 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.3rem; color: #3fb950; }
+        
+        p { margin: 1rem 0; }
+        
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        code {
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 0.9em;
+        }
+        
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        th { background: var(--bg-secondary); color: #ffffff; }
+        
+        blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1rem;
+            color: var(--text-muted);
+            margin: 1rem 0;
+        }
+        
+        ul, ol { margin: 1rem 0 1rem 2rem; }
+        
+        li { margin: 0.5rem 0; }
+        
+        hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+        
+        #toc {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        #toc ul { list-style: none; margin: 0; }
+        #toc li { margin: 0.5rem 0 0.5rem 1rem; }
+        #toc > ul { margin-left: 0; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="local-llm-course-zero-to-production">🧠 Local LLM Course: Zero to Production</h1>
+<blockquote>
+<p>Full Curriculum: ตั้งแต่พื้นฐานจนถึงการต่อ Backend จริง — เข้าใจทุก layer ของ LLM stack</p>
+<p><strong>Version 4.1 | March 2026 | Complete Edition</strong></p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#learning-path">Learning Path</a></li>
+<li><a href="#part-0-big-picture">PART 0: Big Picture</a></li>
+<li><a href="#part-1-what-is-model">PART 1: What is Model</a></li>
+<li><a href="#part-2-model-types">PART 2: Model Types</a></li>
+<li><a href="#part-3-xxb-model-size">PART 3: xxB Model Size</a></li>
+<li><a href="#part-4-model-format">PART 4: Model Format</a></li>
+<li><a href="#part-5-quantization--precision">PART 5: Quantization \&amp; Precision</a></li>
+<li><a href="#part-6-runtime--inference-engine">PART 6: Runtime / Inference Engine</a></li>
+<li><a href="#part-7-gpu-framework">PART 7: GPU Framework</a></li>
+<li><a href="#part-8-hardware-selection">PART 8: Hardware Selection</a></li>
+<li><a href="#part-9-run-with-lm-studio">PART 9: Run with LM Studio</a></li>
+<li><a href="#part-10-api-usage">PART 10: API Usage</a></li>
+<li><a href="#part-11-full-stack-integration">PART 11: Full Stack Integration</a></li>
+<li><a href="#part-12-advanced-topics">PART 12: Advanced Topics</a></li>
+<li><a href="#bonus-dgx-spark--uma-deep-dive">Bonus: DGX Spark \&amp; UMA Deep Dive</a></li>
+<li><a href="#complete-formulas-reference">Complete Formulas Reference</a></li>
+</ul>
+<hr />
+<h2 id="learning-path">Learning Path</h2>
+<pre><code>0. Big Picture → ภาพรวมทั้งหมด
+1. What is Model → LLM คืออะไร
+2. Model Types → Base / Instruct / Embedding
+3. xxB Model Size → 7B, 13B, 70B คืออะไร
+4. Model Format → GGUF / Safetensors / ONNX
+5. Quantization → FP16 → INT4
+6. Runtime / Engine → llama.cpp / Ollama / vLLM
+7. GPU Framework → CUDA / Metal / ROCm
+8. Hardware Selection → เลือก hardware ให้เหมาะกับงาน
+9. LM Studio → รันโมเดลแบบง่ายที่สุด
+10. API Usage → เปิด API ใช้งานจริง
+11. Full Stack → ต่อ Backend
+12. Advanced → RAG, Scaling
+</code></pre>
+<hr />
+<h1 id="part-0-big-picture">PART 0: Big Picture</h1>
+<h2 id="the-llm-stack-pipeline">The LLM Stack Pipeline</h2>
+<p>ทุกครั้งที่ user พิมพ์คำถาม → ระบบต้องผ่านทุก layer ตามลำดับ</p>
+<pre><code>User → App/UI → Backend → Runtime → Model → Framework → Hardware
+  1    2      3        4        5       6          7
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>ตัวอย่าง</th>
+<th>หน้าที่</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. App</strong></td>
+<td>Chat UI, Website, Slack Bot</td>
+<td>รับ input จาก user แสดง output</td>
+</tr>
+<tr>
+<td><strong>2. Backend</strong></td>
+<td>Rails, Go, Node.js, Python</td>
+<td>จัดการ logic, API, business rules</td>
+</tr>
+<tr>
+<td><strong>3. Runtime</strong></td>
+<td>llama.cpp, Ollama, vLLM</td>
+<td>รันโมเดลจริง — inference engine</td>
+</tr>
+<tr>
+<td><strong>4. Model</strong></td>
+<td>GGUF, Safetensors, ONNX</td>
+<td>ไฟล์โมเดลที่เก็บ weights</td>
+</tr>
+<tr>
+<td><strong>5. Framework</strong></td>
+<td>CUDA, Metal, ROCm, OpenCL</td>
+<td>เชื่อม runtime → hardware</td>
+</tr>
+<tr>
+<td><strong>6. Hardware</strong></td>
+<td>NVIDIA GPU, Apple Silicon, CPU</td>
+<td>คำนวณจริง</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_1">ภาพรวมการทำงาน</h3>
+<pre><code>┌──────────────────────────────────────────────────────────────────┐
+│                         USER INPUT                                │
+│                     &quot;What is AI?&quot;                                 │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      1. APP / UI                                 │
+│              Chat interface, CLI, API endpoint                     │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │ HTTPS / HTTP
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      2. BACKEND                                   │
+│           Business logic, authentication, rate limiting            │
+│                     Express/FastAPI/Rails                         │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │ HTTP to localhost
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      3. RUNTIME (llama.cpp)                      │
+│        Inference engine — loads model, manages memory              │
+│              Handles tokenization, generation                     │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      4. MODEL FILE (.gguf)                        │
+│           Quantized weights, vocabulary, metadata                 │
+│                  ~4-40 GB on disk                                │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │ API calls
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      5. FRAMEWORK (CUDA/Metal)                   │
+│         Low-level GPU APIs — memory management, kernels            │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      6. HARDWARE                                  │
+│              NVIDIA GPU / Apple Silicon / CPU                      │
+│                   Actual computation                             │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                       OUTPUT                                      │
+│            &quot;Artificial Intelligence (AI) is...&quot;                    │
+└──────────────────────────────────────────────────────────────────┘
+</code></pre>
+<blockquote>
+<p><strong>จำไว้:</strong> "User พิมพ์ → ไป Backend → ไป Runtime → ไป Model → ผ่าน Framework → บน Hardware → ได้ Output กลับมา"</p>
+</blockquote>
+<hr />
+<h1 id="part-1-what-is-model">PART 1: What is Model</h1>
+<h2 id="llm-large-language-model">LLM: Large Language Model</h2>
+<p>โมเดล AI ที่ถูก train ด้วยข้อมูล text จำนวนมหาศาล เพื่อทำ <strong>Next Token Prediction</strong></p>
+<h3 id="core-concept-neural-network">Core Concept — Neural Network คืออะไร?</h3>
+<p>ลองนึกภาพว่าสมองมนุษย์มี neuron หลายพันล้านตัว ที่เชื่อมต่อกัน แต่ละ connection มี "ความแข็งแกร่ง" (weight) ต่างกัน</p>
+<p>AI model ก็เป็นตารางตัวเลข (weights) หลายพันล้านตัวที่บอกว่า neuron นี้ควร "ส่งสัญญาณ" ไปหา neuron ตัวไหนแค่ไหน</p>
+<pre><code>Input: &quot;สวัสดี&quot; 
+  → Model weights (พันล้านตัวเลข)
+  → Output: &quot;สวัสดีครับ มีอะไรให้ช่วยไหม?&quot;
+</code></pre>
+<h3 id="how-llm-works-step-by-step">How LLM Works — Step by Step</h3>
+<pre><code>Input: &quot;The capital of France is&quot;
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. TOKENIZATION                                           │
+│     แปลง text → numbers (tokens)                           │
+│     &quot;The&quot; → 464, &quot;capital&quot; → 1751, &quot;of&quot; → 3290            │
+│     &quot;France&quot; → 319, &quot;is&quot; → 4886                            │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  2. EMBEDDING                                              │
+│     แปลง token → vector (e.g., 4096 dimensions)             │
+│     [464] → [0.234, -0.891, 0.442, ... 4096 dims]        │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  3. TRANSFORMER LAYERS                                      │
+│     ประมวลผลผ่าน neural network หลาย layer                │
+│                                                             │
+│     ┌─────────────────────────────────────────────────┐     │
+│     │  Layer N:                                        │     │
+│     │  - Self-Attention: หาความสัมพันธ์ระหว่าง token │     │
+│     │  - Feed-Forward: ประมวลผล patterns            │     │
+│     │  - LayerNorm: normalize outputs                 │     │
+│     └─────────────────────────────────────────────────┘     │
+│                           │                                   │
+│                           ▼                                   │
+│     (ผ่าน 32-80+ layers ซ้ำๆ)                             │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. OUTPUT PROJECTION                                       │
+│     แปลง hidden state → vocabulary logits                   │
+│     [0.234, -0.891, ...] → [logits สำหรับทุก token ใน vocab]│
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  5. DECODING / SAMPLING                                     │
+│     เลือก token ถัดไป (greedy, temperature, top-p)         │
+│     &quot;Paris&quot; = token ที่มี probability สูงสุด                 │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="two-phases-of-inference">Two Phases of Inference</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    LLM INFERENCE                             │
+│                                                             │
+│   ┌──────────────┐              ┌──────────────────────┐  │
+│   │   PREFILL    │    ──────►    │       DECODE         │  │
+│   │   PHASE      │              │       PHASE          │  │
+│   └──────────────┘              └──────────────────────┘  │
+│                                                             │
+│   &quot;What is AI?&quot;        token-by-token generation            │
+│   (one-shot)           until EOS / max tokens               │
+│                                                             │
+│   ⚡ FAST               🐢 SLOW (sequential)                │
+│   parallelized          one token at a time                 │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h4 id="prefill-phase-fast-parallel"><strong>Prefill Phase</strong> (Fast, Parallel)</h4>
+<ul>
+<li>รับ prompt ทั้งหมด → ประมวลผลพร้อมกัน (parallel)</li>
+<li>สร้าง KV cache สำหรับทุก position ใน prompt</li>
+<li>ใช้เวลา: แปรผันตาม prompt length</li>
+<li>Output: "Time to First Token" (TTFT)</li>
+</ul>
+<h4 id="decode-phase-slow-sequential"><strong>Decode Phase</strong> (Slow, Sequential)</h4>
+<ul>
+<li>สร้างทีละ token (autoregressive)</li>
+<li>แต่ละ token ต้อง attention กับทุก token ก่อนหน้า</li>
+<li>ใช้ KV cache ที่สร้างไว้ใน prefill</li>
+<li>ใช้เวลา: แปรผันตาม total output length</li>
+<li>Output: "Time per Output Token" (TPOT)</li>
+</ul>
+<h2 id="vocabulary">Vocabulary: ศัพท์ที่ต้องรู้</h2>
+<table>
+<thead>
+<tr>
+<th>คำศัพท์</th>
+<th>ความหมาย</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Token</strong></td>
+<td>หน่วยเล็กที่สุดของ text (~0.75 คำ หรือ ~4 ตัวอักษร)</td>
+</tr>
+<tr>
+<td><strong>Parameters</strong></td>
+<td>ค่าน้ำหนักที่เรียนรู้ — 7B = 7 พันล้านค่า</td>
+</tr>
+<tr>
+<td><strong>Context Window</strong></td>
+<td>จำนวน token สูงสุดที่โมเดลรับได้ (เช่น 8K, 32K, 128K)</td>
+</tr>
+<tr>
+<td><strong>Embedding</strong></td>
+<td>แปลง token → vector ขนาดเช่น 4096 มิติ</td>
+</tr>
+<tr>
+<td><strong>Vocabulary Size</strong></td>
+<td>จำนวน token ที่โมเดลรู้จัก (เช่น 128,256 tokens)</td>
+</tr>
+<tr>
+<td><strong>Layer</strong></td>
+<td>ชั้นของ neural network — ยิ่งมาก = ยิ่ง deep</td>
+</tr>
+<tr>
+<td><strong>Head</strong></td>
+<td>Self-attention head — แต่ละ head ดูความสัมพันธ์ต่างกัน</td>
+</tr>
+<tr>
+<td><strong>Logits</strong></td>
+<td>คะแนนก่อน softmax — ยิ่งสูง = probability สูง</td>
+</tr>
+<tr>
+<td><strong>Temperature</strong></td>
+<td>ควบคุม randomness — สูง = 随机, ต่ำ = deterministic</td>
+</tr>
+<tr>
+<td><strong>Top-p / Nucleus Sampling</strong></td>
+<td>เลือกจาก smallest set ที่รวม probability = p</td>
+</tr>
+<tr>
+<td><strong>EOS Token</strong></td>
+<td>End of sequence — โมเดลบอกว่าจบแล้ว</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tokenization-examples">Tokenization Examples</h3>
+<pre><code>Text: &quot;Hello, world!&quot;
+
+Tokenization (GPT-style):
+  &quot;Hello&quot;    → 19973
+  &quot;,&quot;        → 11
+  &quot; world&quot;   → 1917
+  &quot;!&quot;        → 0 (usually)
+
+Text: &quot;ฉันรักAI&quot; (Thai + English)
+
+Tokenization:
+  &quot;ฉัน&quot;     → 320
+  &quot;รัก&quot;     → 1047
+  &quot;A&quot;       → 32
+  &quot;I&quot;       → 33
+
+Note: English chars ~1 token per 4 chars
+      Thai chars ~1-2 tokens per character
+</code></pre>
+<hr />
+<h1 id="part-2-model-types">PART 2: Model Types</h1>
+<p>แบ่งตามวัตถุประสงค์การใช้งาน</p>
+<h2 id="base-model">Base Model</h2>
+<ul>
+<li><strong>คือ:</strong> โมเดลที่ train ด้วย text ทั่วไป (next token prediction)</li>
+<li><strong>ใช้งาน:</strong> ต่อ sentence ที่เหมาะสม, text completion</li>
+<li><strong>ตัวอย่าง:</strong> Llama-3.1-8B (base), Qwen-2.5-7B</li>
+<li><strong>ไม่เหมาะกับ:</strong> Chat, Q&amp;A โดยตรง</li>
+</ul>
+<pre><code>Input:  &quot;The capital of France is&quot;
+Base:   &quot;The capital of France is a beautiful city known for...&quot;
+</code></pre>
+<h2 id="instruct-chat-model">Instruct / Chat Model</h2>
+<ul>
+<li><strong>คือ:</strong> Base + fine-tune ให้ตอบคำถามได้ (Instruction Tuning)</li>
+<li><strong>ใช้งาน:</strong> Chat, Q&amp;A, งานทั่วไป</li>
+<li><strong>ตัวอย่าง:</strong> Llama-3.1-8B-Instruct, Mistral-7B-Instruct-v0.3</li>
+<li><strong>การ train:</strong> RLHF, DPO, SFT</li>
+</ul>
+<pre><code>Input:  &quot;What is the capital of France?&quot;
+Instruct: &quot;The capital of France is Paris.&quot;
+</code></pre>
+<h2 id="system-completion-model">System / Completion Model</h2>
+<ul>
+<li><strong>คือ:</strong> Base + special tokens ให้รับ instruction ใน prompt</li>
+<li><strong>ตัวอย่าง:</strong> CodeLlama, Qwen-Coder</li>
+<li><strong>ใช้งาน:</strong> Code generation, fill-in-middle</li>
+</ul>
+<h2 id="embedding-model">Embedding Model</h2>
+<ul>
+<li><strong>คือ:</strong> แปลง text → vector สำหรับค้นหา</li>
+<li><strong>ใช้งาน:</strong> RAG, Semantic Search, Similarity</li>
+<li><strong>ตัวอย่าง:</strong> nomic-embed-text, bge-large-en-v1.5</li>
+<li><strong>output:</strong> Vector (e.g., 768, 1024, 1536 dimensions)</li>
+</ul>
+<pre><code>Input:  &quot;What is AI?&quot;
+Embedding Model: → [0.234, -0.891, 0.442, ... 768 dims]
+
+Similarity Search:
+  &quot;What is AI?&quot;        → [0.234, -0.891, ...]  → Distance: 0.0
+  &quot;Tell me about ML&quot;   → [0.231, -0.889, ...]  → Distance: 0.02
+  &quot;Weather today&quot;      → [0.891, 0.442, ...]   → Distance: 0.85
+</code></pre>
+<h2 id="multimodal-model">Multimodal Model</h2>
+<ul>
+<li><strong>คือ:</strong> รับได้หลาย modality — text + image + audio</li>
+<li><strong>ตัวอย่าง:</strong> Llama-3.2-Vision, GPT-4V, Gemma-3-27B</li>
+<li><strong>ใช้งาน:</strong> Image captioning, VQA, document understanding</li>
+</ul>
+<blockquote>
+<p><strong>สรุป:</strong> ถ้าต้องการแชท → ใช้ Instruct model, ถ้าต้องทำ RAG → ใช้ Embedding model</p>
+</blockquote>
+<hr />
+<h1 id="part-3-xxb-model-size">PART 3: xxB Model Size</h1>
+<h2 id="parameters">Parameters คืออะไร</h2>
+<p>Parameters คือ <strong>weights (ค่าน้ำหนัก)</strong> ที่เรียนรู้ระหว่าง training — ยิ่งเยอะ = ยิ่งเก่ง</p>
+<pre><code>7B  = 7,000,000,000 parameters
+13B = 13,000,000,000 parameters
+33B = 33,000,000,000 parameters
+70B = 70,000,000,000 parameters
+405B = 405,000,000,000 parameters
+</code></pre>
+<h3 id="parameters_1">Parameters ในโมเดลคืออะไรบ้าง?</h3>
+<pre><code>Transformer Model Parameters Breakdown:
+
+1. Embedding Layer
+   - Token embeddings: vocab_size × hidden_dim
+   - Example: 128,256 × 4096 = 525M parameters
+
+2. Self-Attention (per layer)
+   - Query projection:    hidden_dim × hidden_dim
+   - Key projection:      hidden_dim × hidden_dim
+   - Value projection:    hidden_dim × hidden_dim
+   - Output projection:   hidden_dim × hidden_dim
+   Total per layer: 4 × (d_model²)
+
+3. Feed-Forward Network (per layer)
+   - Up projection:       hidden_dim × ff_dim (usually 4× hidden_dim)
+   - Down projection:     ff_dim × hidden_dim
+   Total per layer: 2 × hidden_dim × ff_dim
+
+4. LayerNorm (per layer)
+   - 2 × hidden_dim (gamma + beta)
+
+5. Output Layer
+   - hidden_dim × vocab_size
+
+Total: ~70% FFN + ~20% Attention + ~10% Embeddings
+</code></pre>
+<h2 id="memory-requirements-fp16">Memory Requirements (FP16)</h2>
+<table>
+<thead>
+<tr>
+<th>Model Size</th>
+<th>Parameters</th>
+<th>FP16 RAM</th>
+<th>Recommended Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1B-3B</td>
+<td>1-3 Billion</td>
+<td>2-6 GB</td>
+<td>Laptop, Mac Mini</td>
+</tr>
+<tr>
+<td><strong>7B</strong></td>
+<td>7 Billion</td>
+<td>~14 GB</td>
+<td>RTX 3060+, M1 Pro+</td>
+</tr>
+<tr>
+<td><strong>13B</strong></td>
+<td>13 Billion</td>
+<td>~26 GB</td>
+<td>RTX 4090, A100</td>
+</tr>
+<tr>
+<td>30B</td>
+<td>30 Billion</td>
+<td>~60 GB</td>
+<td>A100 40GB+</td>
+</tr>
+<tr>
+<td>70B</td>
+<td>70 Billion</td>
+<td>~140 GB</td>
+<td>Multi-GPU / Enterprise</td>
+</tr>
+<tr>
+<td>405B</td>
+<td>405 Billion</td>
+<td>~810 GB</td>
+<td>Data center clusters</td>
+</tr>
+</tbody>
+</table>
+<h2 id="real-file-sizes-quantized">Real File Sizes (Quantized)</h2>
+<table>
+<thead>
+<tr>
+<th>Model Size</th>
+<th>FP16</th>
+<th>Q8_0</th>
+<th>Q6_K</th>
+<th>Q5_K_M</th>
+<th>Q4_K_M</th>
+<th>Q4_0</th>
+<th>Q3_K_M</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7B</td>
+<td>14 GB</td>
+<td>9.5 GB</td>
+<td>7.2 GB</td>
+<td>5.9 GB</td>
+<td>4.9 GB</td>
+<td>4.4 GB</td>
+<td>3.5 GB</td>
+</tr>
+<tr>
+<td>13B</td>
+<td>26 GB</td>
+<td>18 GB</td>
+<td>13 GB</td>
+<td>11 GB</td>
+<td>9 GB</td>
+<td>8.1 GB</td>
+<td>6.6 GB</td>
+</tr>
+<tr>
+<td>33B</td>
+<td>66 GB</td>
+<td>44 GB</td>
+<td>34 GB</td>
+<td>28 GB</td>
+<td>23 GB</td>
+<td>21 GB</td>
+<td>17 GB</td>
+</tr>
+<tr>
+<td>70B</td>
+<td>140 GB</td>
+<td>93 GB</td>
+<td>72 GB</td>
+<td>59 GB</td>
+<td>49 GB</td>
+<td>44 GB</td>
+<td>36 GB</td>
+</tr>
+<tr>
+<td>405B</td>
+<td>810 GB</td>
+<td>540 GB</td>
+<td>420 GB</td>
+<td>350 GB</td>
+<td>280 GB</td>
+<td>250 GB</td>
+<td>200 GB</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Trade-off:</strong> โมเดลใหญ่กว่า = ดีกว่า แต่กิน RAM/VRAM มากกว่า</p>
+<p><strong>แนะนำ:</strong> เริ่มจาก 7B ก่อน — เพียงพอสำหรับงานส่วนใหญ่</p>
+</blockquote>
+<hr />
+<h1 id="part-4-model-format">PART 4: Model Format</h1>
+<p>"รูปแบบไฟล์ที่เก็บโมเดล" — แต่ละ format เหมาะกับ hardware ต่างกัน</p>
+<h2 id="gguf-gpt-generated-unified-format">GGUF (GPT Generated Unified Format)</h2>
+<p><strong>Creator:</strong> Georgi Gerganov (llama.cpp)</p>
+<ul>
+<li><strong>ดีที่สุดสำหรับ:</strong> CPU inference, Apple Silicon (Metal), รัน local แบบง่าย</li>
+<li><strong>Extension:</strong> .gguf</li>
+<li><strong>Quantization:</strong> Q2-K to Q8_0 (built-in)</li>
+<li><strong>Features:</strong></li>
+<li>Self-contained (model + tokenizer + metadata)</li>
+<li>Easy to share and use</li>
+<li>Fast quantization tools (llama-quantize)</li>
+</ul>
+<h3 id="gguf-file-structure">GGUF File Structure</h3>
+<pre><code>┌─────────────────────────────────────────────┐
+│  GGUF File                                  │
+│  ┌─────────────────────────────────────────┐ │
+│  │ Metadata (magic, version, architecture)  │ │
+│  ├─────────────────────────────────────────┤ │
+│  │ Hyperparameters (n_layers, n_heads...)  │ │
+│  ├─────────────────────────────────────────┤ │
+│  │ Vocabulary (tokenizer)                  │ │
+│  ├─────────────────────────────────────────┤ │
+│  │ Model Data (quantized weights)          │ │
+│  │  - Tensor info (name, shape, offset)   │ │
+│  │  - Binary weight data (Q4_K_M etc.)    │ │
+│  └─────────────────────────────────────────┘ │
+└─────────────────────────────────────────────┘
+</code></pre>
+<h2 id="safetensors">Safetensors</h2>
+<p><strong>Creator:</strong> HuggingFace</p>
+<ul>
+<li><strong>ดีที่สุดสำหรับ:</strong> GPU inference (PyTorch), Training / Fine-tuning, Production deployment</li>
+<li><strong>Extension:</strong> .safetensors</li>
+<li><strong>Quantization:</strong> GPTQ, AWQ, ExL2, bitsandbytes</li>
+<li><strong>Features:</strong></li>
+<li>Safe (no arbitrary code execution)</li>
+<li>Fast loading (memory-mapped)</li>
+<li>Lazy loading supported</li>
+</ul>
+<h2 id="onnx-open-neural-network-exchange">ONNX (Open Neural Network Exchange)</h2>
+<p><strong>Creator:</strong> Microsoft</p>
+<ul>
+<li><strong>ดีที่สุดสำหรับ:</strong> Cross-platform, Mobile / Edge, Web (WASM)</li>
+<li><strong>Extension:</strong> .onnx</li>
+<li><strong>Tools:</strong> ONNX Runtime, WinML, TensorRT</li>
+<li><strong>Features:</strong></li>
+<li>Cross-framework compatibility</li>
+<li>Hardware acceleration on edge devices</li>
+<li>Web deployment via WebAssembly</li>
+</ul>
+<h2 id="mlx">MLX</h2>
+<p><strong>Creator:</strong> Apple</p>
+<ul>
+<li><strong>ดีที่สุดสำหรับ:</strong> Apple Silicon (M1/M2/M3/M4)</li>
+<li><strong>Extension:</strong> .mlx</li>
+<li><strong>Features:</strong></li>
+<li>Unified memory architecture</li>
+<li>Efficient quantization (MLX quantized)</li>
+<li>Fast on Apple Silicon</li>
+</ul>
+<h2 id="awq-activation-aware-weight-quantization">AWQ (Activation-aware Weight Quantization)</h2>
+<ul>
+<li><strong>ดีที่สุดสำหรับ:</strong> High quality 4-bit quantization</li>
+<li><strong>Extension:</strong> .safetensors with AWQ</li>
+<li><strong>Features:</strong></li>
+<li>Better than naive INT4</li>
+<li>Requires less compute for same quality</li>
+<li>Newer format, growing support</li>
+</ul>
+<h2 id="hardware-support-matrix">Hardware Support Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>CPU</th>
+<th>NVIDIA GPU</th>
+<th>Apple Silicon</th>
+<th>Mobile/Edge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GGUF</strong></td>
+<td>✅ ดีสุด</td>
+<td>✅</td>
+<td>✅ Metal</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td><strong>Safetensors</strong></td>
+<td>🟡</td>
+<td>✅ ดีสุด</td>
+<td>🟡</td>
+<td>🟡</td>
+</tr>
+<tr>
+<td><strong>ONNX</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>🟡</td>
+<td>✅ ดีสุด</td>
+</tr>
+<tr>
+<td><strong>MLX</strong></td>
+<td>❌</td>
+<td>❌</td>
+<td>✅ ดีสุด</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>AWQ</strong></td>
+<td>🟡</td>
+<td>✅</td>
+<td>🟡</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>แนะนำสำหรับ Local LLM:</strong>
+- NVIDIA GPU → GGUF หรือ Safetensors + GPTQ/AWQ
+- Apple Silicon → GGUF (Metal acceleration)
+- CPU Only → GGUF</p>
+</blockquote>
+<hr />
+<h1 id="part-5-quantization-precision">PART 5: Quantization &amp; Precision</h1>
+<p>ลด precision เพื่อให้โมเดล "เบา" ลง — ลด RAM แต่กระทบความแม่นยำเล็กน้อย</p>
+<h2 id="precision">Precision คืออะไร?</h2>
+<p>Precision = จำนวน bits ที่ใช้เก็บแต่ละ parameter</p>
+<pre><code>FP32:  0.0034928174  (32 bits = 4 bytes) — Full precision
+FP16:  0.00349       (16 bits = 2 bytes) — Half precision  
+INT8:  42            (8 bits = 1 byte)  — 8-bit integer
+INT4:  7             (4 bits = 0.5 bytes) — 4-bit integer
+</code></pre>
+<h2 id="precision-types-deep-dive">Precision Types Deep Dive</h2>
+<h3 id="fp32-full-precision">FP32 (Full Precision)</h3>
+<pre><code>0.0034928174  (32 bits = 4 bytes)
+</code></pre>
+<ul>
+<li>Precision เต็มที่สุด</li>
+<li>ใช้ VRAM มากที่สุด</li>
+<li>แทบไม่มีเหตุผลจะใช้สำหรับ inference</li>
+</ul>
+<h3 id="fp16-half-precision">FP16 (Half Precision)</h3>
+<pre><code>0.00349  (16 bits = 2 bytes)
+</code></pre>
+<ul>
+<li>คุณภาพใกล้เคียง FP32 มาก (~99.9%)</li>
+<li>มาตรฐานสำหรับ modern inference</li>
+<li>ทุก GPU รองรับ (Nvidia, AMD, Intel)</li>
+</ul>
+<h3 id="bf16-brain-float-16">BF16 (Brain Float 16)</h3>
+<pre><code>0.00349  (16 bits = 2 bytes)
+</code></pre>
+<ul>
+<li>สร้างมาเพื่อ AI โดยเฉพาะ (Google คิดค้น)</li>
+<li>Range กว้างกว่า FP16 → เหมาะกับ training</li>
+<li>คุณภาพเทียบเท่า FP16 แต่โมเดลส่วนใหญ่ยัง train ด้วย BF16</li>
+</ul>
+<h3 id="int8-8-bit-integer">INT8 (8-bit Integer)</h3>
+<pre><code>42  (8 bits = 1 byte)
+</code></pre>
+<ul>
+<li>ประหยัด 50% จาก FP16</li>
+<li>อาจมี quality loss เล็กน้อย (~1-3%)</li>
+<li>ใช้ quantization techniques พิเศษ</li>
+</ul>
+<h3 id="int4-4-bit-integer">INT4 (4-bit Integer)</h3>
+<pre><code>7  (4 bits = 0.5 bytes)
+</code></pre>
+<ul>
+<li>ประหยัด 75% จาก FP16</li>
+<li>Quality loss ชัดเจนขึ้น แต่ยังใช้ได้ (~5-15%)</li>
+<li>เหมาะกับ local LLM บนเครื่องที่มี RAM/VRAM จำกัด</li>
+</ul>
+<h2 id="precision-comparison-table">Precision Comparison Table</h2>
+<table>
+<thead>
+<tr>
+<th>Precision</th>
+<th>ขนาด/param</th>
+<th>คุณภาพ</th>
+<th>VRAM/RAM (7B)</th>
+<th>ใช้เมื่อ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FP32</strong></td>
+<td>4 bytes</td>
+<td>สูงสุด</td>
+<td>~28 GB</td>
+<td>Production ที่ต้องการความแม่นยำเต็มที่</td>
+</tr>
+<tr>
+<td><strong>FP16</strong></td>
+<td>2 bytes</td>
+<td>ดีมาก</td>
+<td>~14 GB</td>
+<td>GPU ทั่วไป, เริ่มต้นที่ดี</td>
+</tr>
+<tr>
+<td><strong>BF16</strong></td>
+<td>2 bytes</td>
+<td>ดีมาก</td>
+<td>~14 GB</td>
+<td>สร้างด้วย modern training</td>
+</tr>
+<tr>
+<td><strong>INT8</strong> (Q8_0)</td>
+<td>1 byte</td>
+<td>ดี</td>
+<td>~7 GB</td>
+<td>ต้องการประหยัดโดยไม่สูญเสียมาก</td>
+</tr>
+<tr>
+<td><strong>INT6</strong> (Q6_K)</td>
+<td>0.75 bytes</td>
+<td>ดีมาก</td>
+<td>~5.2 GB</td>
+<td>สมดุลดี</td>
+</tr>
+<tr>
+<td><strong>INT5</strong> (Q5_K_M)</td>
+<td>0.63 bytes</td>
+<td>ดี</td>
+<td>~4.4 GB</td>
+<td>แนะนำสำหรับ 8-12GB VRAM</td>
+</tr>
+<tr>
+<td><strong>INT4</strong> (Q4_K_M)</td>
+<td>0.56 bytes</td>
+<td>พอใช้</td>
+<td>~3.9 GB</td>
+<td>แนะนำสำหรับ &lt;8GB VRAM</td>
+</tr>
+<tr>
+<td><strong>INT4</strong> (Q4_0)</td>
+<td>0.47 bytes</td>
+<td>ต่ำลง</td>
+<td>~3.3 GB</td>
+<td>ระดับล่าง</td>
+</tr>
+<tr>
+<td><strong>INT2</strong> (Q2_K)</td>
+<td>0.28 bytes</td>
+<td>ต่ำ</td>
+<td>~2 GB</td>
+<td>ทดลอง, ไม่แนะนำใช้จริง</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quantization">Quantization ทำงานยังไง</h2>
+<h3 id="step-by-step-process">Step-by-Step Process</h3>
+<pre><code>Original FP16 weights: [0.7852, -0.1234, 0.5671, -0.8901, ...]
+  │
+  │ 1. Find scale and zero point
+  │    scale = (max - min) / 127
+  │    zero_point = round(-min / scale)
+  │
+  ▼
+Quantized INT8: [100, -15, 72, -113, ...] (8-bit integers)
+  │
+  │ 2. Store: 1 byte per value (vs 2 bytes ก่อน)
+  │
+  ▼
+Result: ลดขนาด 50% แต่ความแม่นยำลด ~1-3%
+</code></pre>
+<h3 id="dequantization-during-inference">Dequantization (during inference)</h3>
+<pre><code>Quantized: 100
+Scale: 0.00618
+Zero point: 0
+
+Dequantized: 100 × 0.00618 = 0.618 (close to original 0.7852)
+</code></pre>
+<h3 id="gguf-quantization-types-detailed">GGUF Quantization Types (Detailed)</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Bits</th>
+<th>7B Size</th>
+<th>Quality</th>
+<th>แนะนำสำหรับ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Q8_0</strong></td>
+<td>8</td>
+<td>~7 GB</td>
+<td>~97%</td>
+<td>RAM เยอะ ต้องการคุณภาพสูง</td>
+</tr>
+<tr>
+<td><strong>Q6_K</strong></td>
+<td>~6</td>
+<td>~5.5 GB</td>
+<td>~94%</td>
+<td>Balance ระหว่างคุณภาพ+ขนาด</td>
+</tr>
+<tr>
+<td><strong>Q5_K_M</strong></td>
+<td>~5</td>
+<td>~4.9 GB</td>
+<td>~92%</td>
+<td>แนะนำสำหรับ 8-12GB VRAM</td>
+</tr>
+<tr>
+<td><strong>Q4_K_M ⭐</strong></td>
+<td>~4</td>
+<td>~4.2 GB</td>
+<td>~89%</td>
+<td><strong>Sweet spot — ส่วนใหญ่ใช้</strong></td>
+</tr>
+<tr>
+<td><strong>Q4_0</strong></td>
+<td>~4</td>
+<td>~3.8 GB</td>
+<td>~86%</td>
+<td>VRAM จำกัดมาก</td>
+</tr>
+<tr>
+<td><strong>Q3_K_M</strong></td>
+<td>~3</td>
+<td>~3.5 GB</td>
+<td>~85%</td>
+<td>VRAM จำกัดสุดๆ</td>
+</tr>
+<tr>
+<td><strong>Q2_K</strong></td>
+<td>~2</td>
+<td>~2.9 GB</td>
+<td>~80%</td>
+<td>ทดลองเท่านั้น</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>คำแนะนำ:</strong> Q4_K_M คือ sweet spot สำหรับคนส่วนใหญ่ — ลดขนาด 70% แต่สูญเสียคุณภาพแค่ ~10%</p>
+</blockquote>
+<h3 id="k_m-vs-k_s">K_M vs K_S — ต่างกันยังไง?</h3>
+<ul>
+<li><strong>Q4_K_M</strong> = "Medium" — ใช้ extra tensor เก็บค่าที่สำคัญมากให้ precision สูงขึ้น</li>
+<li><strong>Q4_K_S</strong> = "Small" — ประหยัดกว่าเล็กน้อย แต่คุณภาพน้อยกว่า</li>
+<li><strong>IQ4_XS</strong> = "Improved Q4" — ดีกว่า Q4_K_M เล็กน้อยด้วย memory footprint ที่ใกล้เคียงกัน</li>
+</ul>
+<p><strong>Q4_K_M แทบจะเป็น standard</strong> ที่ใช้กันทั่วโลก</p>
+<h2 id="weight-inference-quantization-deep-dive">Weight Inference Quantization — Deep Dive</h2>
+<h3 id="core-concept">Core Concept</h3>
+<p>ระหว่าง <strong>inference</strong> โมเดลยังคงทำงานด้วย weights ที่ถูก quantized ไว้</p>
+<pre><code>Traditional:   FP16 weights (2 bytes each)
+Quantized:      INT4 weights (0.5 bytes each) ← 4x smaller!
+</code></pre>
+<h3 id="exact-process">Exact Process</h3>
+<pre><code>1. Model trained in FP16/BF16 (full precision)
+         ↓
+2. Quantize weights → store as INT4/INT8
+         ↓
+3. During inference:
+   - Load quantized weights (INT4)
+   - Dequantize to FP16 on-the-fly for computation
+   - Compute in FP16
+   - Result: same output quality as FP16 inference
+</code></pre>
+<h3 id="compute-vs-storage-precision">Compute vs Storage Precision</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   STORAGE          →  QUANTIZED (INT4/INT8)   เพื่อประหยัด RAM│
+│                                                             │
+│   COMPUTE          →  ACTUAL calculation ใช้ FP16/BF16      │
+│                                                             │
+│   ═══════════════════════════════════════════════════════   │
+│                                                             │
+│   Weight file:  Q4_K_M (4-bit)    ← เก็บแบบ 4-bit          │
+│   But when GPU calculates:  dequantize → FP16 → compute     │
+│                                                             │
+│   ∴ Quality ≈ FP16 (because compute is still high-prec)    │
+│   But VRAM/RAM usage ≈ 4-bit file size                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h2 id="kv-cache-quantization-deep-dive">KV Cache Quantization — Deep Dive</h2>
+<h3 id="kv-cache">ทำไม KV Cache ถึงสำคัญมาก</h3>
+<p>KV Cache = <strong>Memory ที่เก็บ Key และ Value tensors ของทุก token ที่ generate ไปแล้ว</strong></p>
+<pre><code>Prompt: &quot;The capital of France is&quot;
+Tokens: [The] [capital] [of] [France] [is]
+                 ↓
+         KV Cache for each position:
+         ─────────────────────────────────
+         Position 1 (The):    K₁, V₁
+         Position 2 (capital): K₂, V₂
+         Position 3 (of):      K₃, V₃
+         Position 4 (France):  K₄, V₄
+         Position 5 (is):      K₅, V₅
+
+         Next token: &quot;Paris&quot;
+         → attention ต้อง เข้าถึง K₁-V₅ ทั้งหมด!
+</code></pre>
+<h3 id="kv-cache-memory-breakdown">KV Cache Memory Breakdown</h3>
+<p><strong>สำหรับโมเดล 7B, 4096 context length, FP16:</strong></p>
+<pre><code>Formula:
+  KV_cache_size = 2 × n_layers × n_kv_heads × seq_len × head_dim × bytes_per_param
+
+Breakdown:
+  - n_layers = 32 (Llama 3.1 8B has 32 layers)
+  - n_kv_heads = 8 ( Llama uses GQA, 8 KV heads vs 32 Q heads)
+  - seq_len = 4096 (context length)
+  - head_dim = 128 (for 4096 total dim with 32 heads)
+  - bytes = 2 (FP16)
+
+Calculation:
+  = 2 × 32 × 8 × 4096 × 128 × 2 bytes
+  = 536,870,912 bytes
+  ≈ 512 MB per 4096 tokens!
+</code></pre>
+<h3 id="kv-cache-memory-context-length">KV Cache Memory เทียบกับ Context Length</h3>
+<table>
+<thead>
+<tr>
+<th>Context Length</th>
+<th>FP16 KV/1K tokens</th>
+<th>INT8 KV/1K tokens</th>
+<th>INT4 KV/1K tokens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4,096</td>
+<td>~128 MB</td>
+<td>~64 MB</td>
+<td>~32 MB</td>
+</tr>
+<tr>
+<td>32,768</td>
+<td>~1 GB</td>
+<td>~512 MB</td>
+<td>~256 MB</td>
+</tr>
+<tr>
+<td>131,072</td>
+<td>~4 GB</td>
+<td>~2 GB</td>
+<td>~1 GB</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> KV cache ของ 128K tokens = 4 GB per sequence! ถ้ามี 3 concurrent users = 12 GB เฉพาะ KV cache</p>
+</blockquote>
+<h3 id="kv-cache-quantization-types">KV Cache Quantization Types</h3>
+<h4 id="int8-kv-cache"><strong>INT8 KV Cache</strong></h4>
+<pre><code>Original KV:    FP16 = 2 bytes per value
+Quantized KV:   INT8 = 1 byte per value
+
+Memory savings: 50% reduction
+Quality loss:   ~1-3% (usually acceptable)
+Speed impact:   Minimal (dequantize on-the-fly for attention)
+</code></pre>
+<h4 id="fp8-kv-cache-e5m2-e4m3"><strong>FP8 KV Cache (E5M2 / E4M3)</strong></h4>
+<pre><code>New format ที่ Nvidia H100 + Ada Lovelace รองรับ hardware
+5-bit or 6-bit floating point
+Better than INT8 for certain ranges
+
+Speed:  เร็วกว่า INT8 (hardware-accelerated on modern GPUs)
+Memory: ใกล้เคียง INT8
+Quality: ดีกว่า INT8
+</code></pre>
+<h3 id="gqa-vs-mha-vs-mqa-attention-architecture">GQA vs MHA vs MQA — Attention Architecture</h3>
+<pre><code>MHA (Multi-Head Attention) — Original
+  - 32 Q heads, 32 K heads, 32 V heads
+  - Heavy on KV cache
+  - KV cache: 2 × 32 × 32 × seq_len × head_dim × bytes
+
+MQA (Multi-Query Attention)
+  - 32 Q heads, 1 K head, 1 V head (shared)
+  - KV cache ลดลง 32x
+  - Quality ลดลงบ้าง (เพราะ K,V ไม่แยกต่างหาก)
+
+GQA (Grouped-Query Attention) — Standard now
+  - 32 Q heads, 8 K heads, 8 V heads
+  - สมดุลระหว่าง MHA และ MQA
+  - KV cache ลดลง 4x จาก MHA
+  - ใช้ใน Llama 3, Mistral, Qwen 2
+</code></pre>
+<h3 id="kv-cache-size-by-attention-type">KV Cache Size by Attention Type</h3>
+<pre><code>For Llama 3.1 8B:
+  - 32 layers
+  - 32 Q heads, 8 KV heads
+  - head_dim = 128
+  - seq_len = 4096
+  - FP16
+
+MHA KV cache = 2 × 32 × 32 × 4096 × 128 × 2 = 2 GB
+GQA KV cache = 2 × 32 × 8  × 4096 × 128 × 2 = 512 MB
+MQA KV cache = 2 × 32 × 1  × 4096 × 128 × 2 = 64 MB
+
+GQA saves 4x KV cache vs MHA!
+</code></pre>
+<hr />
+<h1 id="part-6-runtime-inference-engine">PART 6: Runtime / Inference Engine</h1>
+<p>ตัวที่ "รันโมเดลจริง" — เลือก engine ให้เหมาะกับ use case</p>
+<h2 id="llamacpp">llama.cpp</h2>
+<p><strong>Lightweight C/C++ Engine by Georgi Gerganov</strong></p>
+<ul>
+<li><strong>จุดเด่น:</strong></li>
+<li>เร็วมากบน CPU (AVX2, AVX-512, ARM NEON)</li>
+<li>รองรับ GGUF ทุก quantization</li>
+<li>Apple Metal acceleration</li>
+<li>ใช้ RAM หรือ VRAM ก็ได้</li>
+<li>GPU offloading (layer-based)</li>
+<li>Cross-platform (Linux, macOS, Windows)</li>
+<li><strong>ใช้เมื่อ:</strong> Local inference, CPU/GPU mixed, embedded systems</li>
+<li><strong>Used by:</strong> LM Studio, Ollama (under the hood), text-generation-webui</li>
+</ul>
+<h3 id="llamacpp-architecture">llama.cpp Architecture</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    llama.cpp                                 │
+│                                                             │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐       │
+│  │  gguf.c     │   │  llama.cpp  │   │  ɗ-common   │       │
+│  │  (format)   │ → │  (core)     │ → │  (util)     │       │
+│  └─────────────┘   └──────┬──────┘   └─────────────┘       │
+│                           │                                  │
+│                           ▼                                  │
+│                    ┌─────────────┐                          │
+│                    │  Backend    │                          │
+│                    │  CUDA / Metal│                          │
+│                    │  / CPU /    │                          │
+│                    │  OpenCL     │                          │
+│                    └─────────────┘                          │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h2 id="ollama">Ollama</h2>
+<p><strong>User-Friendly Wrapper around llama.cpp</strong></p>
+<ul>
+<li><strong>จุดเด่น:</strong></li>
+<li>ใช้ง่ายมาก: <code>ollama run llama3</code></li>
+<li>มี CLI สวยงาม</li>
+<li>Built-in API server</li>
+<li>Model library พร้อมใช้ (ollama.com/library)</li>
+<li>Supports Modelfile (customization)</li>
+<li>Cross-platform</li>
+<li><strong>ใช้เมื่อ:</strong> Dev/Testing อย่างรวดเร็ว, quick prototyping</li>
+<li><strong>จุดด้อย:</strong> Less customizable than raw llama.cpp</li>
+</ul>
+<h3 id="ollama-commands">Ollama Commands</h3>
+<pre><code class="language-bash"># Run a model
+ollama run llama3.1:8b-instruct-q4_0
+
+# List installed models
+ollama list
+
+# Create custom model (Modelfile)
+ollama create mymodel -f Modelfile
+
+# API server
+ollama serve
+</code></pre>
+<h2 id="vllm">vLLM</h2>
+<p><strong>Production-Grade Engine by UC Berkeley</strong></p>
+<ul>
+<li><strong>จุดเด่น:</strong></li>
+<li><strong>PagedAttention</strong> — KV cache management แบบ virtual memory</li>
+<li>Throughput สูงมาก (2-5x vs naive implementation)</li>
+<li><strong>Continuous batching</strong> — maximizes GPU utilization</li>
+<li><strong>Tensor parallelism</strong> — scale across multiple GPUs</li>
+<li>OpenAI-compatible API</li>
+<li><strong>ใช้เมื่อ:</strong> Production, multi-user, high-throughput scenarios</li>
+<li><strong>จุดด้อย:</strong> GPU-heavy (no CPU inference), more complex setup</li>
+</ul>
+<h3 id="vllm-vs-llamacpp-vs-ollama">vLLM vs llama.cpp vs Ollama</h3>
+<table>
+<thead>
+<tr>
+<th>Criteria</th>
+<th>llama.cpp</th>
+<th>Ollama</th>
+<th>vLLM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ease of Use</strong></td>
+<td>⭐⭐</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Speed (Latency)</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>⭐⭐⭐</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Throughput</strong></td>
+<td>⭐⭐</td>
+<td>⭐⭐</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>CPU Support</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>⭐⭐⭐⭐</td>
+<td>⭐</td>
+</tr>
+<tr>
+<td><strong>Multi-GPU</strong></td>
+<td>⭐⭐</td>
+<td>⭐⭐</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>Best For</strong></td>
+<td>Local, Custom</td>
+<td>Dev, Testing</td>
+<td>Production</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>ความเข้าใจสำคัญ:</strong>
+- llama.cpp = <strong>Engine</strong> (ตัวประมวลผล)
+- Ollama = <strong>Wrapper + UX</strong> (ห่อ llama.cpp ให้ใช้ง่าย)
+- vLLM = <strong>Server Engine</strong> (สำหรับ production scale)</p>
+</blockquote>
+<h2 id="throughput-vs-latency">Throughput vs Latency</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Latency</th>
+<th>Throughput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>คือ</strong></td>
+<td>เวลาที่รอก่อนได้รับ response แรก</td>
+<td>จำนวน request ที่ประมวลผลได้ต่อวินาที</td>
+</tr>
+<tr>
+<td><strong>เหมาะกับ</strong></td>
+<td>ผู้ใช้คนเดียว, Interactive use, Chatbot</td>
+<td>ผู้ใช้หลายคนพร้อมกัน, Batch processing, API service</td>
+</tr>
+<tr>
+<td><strong>แนะนำ</strong></td>
+<td>llama.cpp</td>
+<td>vLLM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="part-7-gpu-framework">PART 7: GPU Framework</h1>
+<p>ตัวเชื่อม Runtime → Hardware — เลือกไม่ได้เลือก hardware ไม่ได้</p>
+<h2 id="cuda">CUDA</h2>
+<p><strong>NVIDIA Only</strong></p>
+<ul>
+<li>Ecosystem ใหญ่ที่สุด</li>
+<li>ทุก AI framework รองรับ (PyTorch, TensorFlow, JAX)</li>
+<li>Driver ดีที่สุด</li>
+<li>Performance สูงสุด</li>
+<li>ใช้กับ: NVIDIA GPU เท่านั้น (RTX, A100, H100, L40)</li>
+</ul>
+<h3 id="cuda-versions">CUDA Versions</h3>
+<table>
+<thead>
+<tr>
+<th>CUDA Version</th>
+<th>Min Driver</th>
+<th>GPU Support</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CUDA 11.8</td>
+<td>470.x</td>
+<td>Ampere, Ada, Hopper</td>
+</tr>
+<tr>
+<td>CUDA 12.x</td>
+<td>525.x</td>
+<td>Ada, Hopper, Blackwell</td>
+</tr>
+</tbody>
+</table>
+<h2 id="metal">Metal</h2>
+<p><strong>Apple Silicon</strong></p>
+<ul>
+<li>Apple M-Series สำหรับ Mac</li>
+<li>Unified Memory Architecture</li>
+<li>Power efficient</li>
+<li>llama.cpp (Metal acceleration), MLX acceleration</li>
+<li>ใช้กับ: Mac เท่านั้น</li>
+</ul>
+<h2 id="rocm">ROCm</h2>
+<p><strong>AMD GPU (Linux)</strong></p>
+<ul>
+<li>Open-source สำหรับ AMD</li>
+<li>PyTorch, JAX support</li>
+<li>ยัง比不上 CUDA ecosystem</li>
+<li>ใช้กับ: AMD GPU (RX 7000 series, MI200, MI300)</li>
+</ul>
+<h2 id="opencl">OpenCL</h2>
+<p><strong>Cross-Platform</strong></p>
+<ul>
+<li>Open standard</li>
+<li>Less optimized than CUDA/Metal</li>
+<li>Fallback option</li>
+<li>ใช้กับ: Older GPUs, cross-vendor</li>
+</ul>
+<h2 id="hardware-framework-mapping">Hardware → Framework Mapping</h2>
+<table>
+<thead>
+<tr>
+<th>Hardware</th>
+<th>Framework</th>
+<th>Engine ที่รองรับ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NVIDIA GPU (RTX, A100, H100)</td>
+<td><strong>CUDA</strong></td>
+<td>llama.cpp, vLLM, text-generation-webui, Ollama</td>
+</tr>
+<tr>
+<td>Apple Silicon (M1-M4)</td>
+<td><strong>Metal</strong></td>
+<td>llama.cpp (Metal), Ollama, MLX</td>
+</tr>
+<tr>
+<td>AMD GPU</td>
+<td><strong>ROCm</strong></td>
+<td>llama.cpp (ROCm build), Ollama</td>
+</tr>
+<tr>
+<td>CPU Only</td>
+<td><strong>BLAS</strong> (OpenBLAS/MKL)</td>
+<td>llama.cpp (BLAS), Ollama</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>สำคัญ:</strong> Framework ต้องตรงกับ Hardware!
+- NVIDIA GPU → ต้องใช้ CUDA
+- Mac → ต้องใช้ Metal
+- ผิด framework = รันไม่ได้</p>
+</blockquote>
+<hr />
+<h1 id="part-8-hardware-selection">PART 8: Hardware Selection</h1>
+<p>Rule หลัก: RAM/VRAM ต้อง &gt; ขนาดโมเดลที่quantize แล้ว</p>
+<h2 id="memory-formula">Memory Formula</h2>
+<pre><code>Memory = Model_Params × Bytes_per_Param + KV_Cache + Overhead
+
+Where:
+  - FP16: 2 bytes per param
+  - Q8_0: 1 byte per param
+  - Q6_K: 0.75 bytes per param
+  - Q5_K_M: 0.63 bytes per param
+  - Q4_K_M: 0.56 bytes per param
+
+  KV_Cache = 2 × n_layers × n_kv_heads × seq_len × head_dim × bytes
+</code></pre>
+<h2 id="quick-hardware-guide">Quick Hardware Guide</h2>
+<table>
+<thead>
+<tr>
+<th>Hardware</th>
+<th>Memory</th>
+<th>รันได้</th>
+<th>Speed</th>
+<th>ราคาโดยประมาณ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mac Mini M4</td>
+<td>16-32 GB</td>
+<td>3B-7B Q4</td>
+<td>Medium</td>
+<td>~$600-1200</td>
+</tr>
+<tr>
+<td>Mac Studio M3 Max</td>
+<td>64-128 GB</td>
+<td>13B-70B Q4</td>
+<td>Fast</td>
+<td>~$3000-8000</td>
+</tr>
+<tr>
+<td>RTX 3060</td>
+<td>12 GB VRAM</td>
+<td>7B Q4</td>
+<td>Fast</td>
+<td>~$300</td>
+</tr>
+<tr>
+<td>RTX 4080</td>
+<td>16 GB VRAM</td>
+<td>13B Q4</td>
+<td>Faster</td>
+<td>~$1200</td>
+</tr>
+<tr>
+<td>RTX 4090</td>
+<td>24 GB VRAM</td>
+<td>30B Q4</td>
+<td>Fastest (Consumer)</td>
+<td>~$1800</td>
+</tr>
+<tr>
+<td>A100 40GB</td>
+<td>40 GB VRAM</td>
+<td>30B-70B Q4</td>
+<td>Very Fast</td>
+<td>~$10,000+</td>
+</tr>
+<tr>
+<td>A100 80GB</td>
+<td>80 GB VRAM</td>
+<td>70B FP16</td>
+<td>Extremely Fast</td>
+<td>~$15,000+</td>
+</tr>
+<tr>
+<td>DGX Spark</td>
+<td>128 GB RAM</td>
+<td>70B Q4 (NVFP4)</td>
+<td>Very Fast (Pre-fill)</td>
+<td>~$3,000</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gpu-recommendations">GPU Recommendations</h2>
+<h3 id="professional-serious-use">แบบ Professional / Serious Use</h3>
+<table>
+<thead>
+<tr>
+<th>GPU</th>
+<th>VRAM</th>
+<th>ราคาเป็น</th>
+<th>เหมาะกับ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RTX 4090</strong></td>
+<td>24 GB</td>
+<td>High</td>
+<td>รัน 70B Q4, 33B FP16, ทำ everything</td>
+</tr>
+<tr>
+<td><strong>A100 40GB</strong></td>
+<td>40 GB</td>
+<td>Very High</td>
+<td>Datacenter, รัน 70B FP16 ได้</td>
+</tr>
+<tr>
+<td><strong>A100 80GB</strong></td>
+<td>80 GB</td>
+<td>Very High</td>
+<td>Production, 70B FP16, fine-tuning</td>
+</tr>
+<tr>
+<td><strong>A6000</strong></td>
+<td>48 GB</td>
+<td>Very High</td>
+<td>คล้าย A100 แต่ Ada generation</td>
+</tr>
+<tr>
+<td><strong>RTX 3090</strong></td>
+<td>24 GB</td>
+<td>Mid-High</td>
+<td>รัน 33B Q4 สบาย, 70B Q4 ก็ได้</td>
+</tr>
+<tr>
+<td><strong>RTX 4080 Super</strong></td>
+<td>16 GB</td>
+<td>High</td>
+<td>รัน 13B FP16, 34B Q4 สบาย</td>
+</tr>
+</tbody>
+</table>
+<h3 id="budget">แบบ Budget / ประหยัด</h3>
+<table>
+<thead>
+<tr>
+<th>GPU</th>
+<th>VRAM</th>
+<th>ราคา</th>
+<th>เหมาะกับ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RTX 4060 Ti 16GB</strong></td>
+<td>16 GB</td>
+<td>Mid</td>
+<td>รัน 13B FP16, 34B Q4, ราคาดี</td>
+</tr>
+<tr>
+<td><strong>RTX 3060 12GB</strong></td>
+<td>12 GB</td>
+<td>Low</td>
+<td>รัน 13B Q6, 7B FP16</td>
+</tr>
+<tr>
+<td><strong>RTX 4060 8GB</strong></td>
+<td>8 GB</td>
+<td>Low</td>
+<td>รัน 7B Q6, 13B Q4</td>
+</tr>
+<tr>
+<td><strong>Arc B580 12GB</strong></td>
+<td>12 GB</td>
+<td>Mid</td>
+<td>ทางเลือก Intel, เร็ว, ราคาดี</td>
+</tr>
+</tbody>
+</table>
+<h3 id="apple-silicon-mac">Apple Silicon (Mac)</h3>
+<table>
+<thead>
+<tr>
+<th>Chip</th>
+<th>Unified Memory</th>
+<th>เหมาะกับ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M1 Max</strong></td>
+<td>64 GB</td>
+<td>รัน 34B Q4 สบาย</td>
+</tr>
+<tr>
+<td><strong>M2 Max</strong></td>
+<td>64 GB</td>
+<td>M1 Max แต่เร็วกว่า 20-30%</td>
+</tr>
+<tr>
+<td><strong>M3 Max</strong></td>
+<td>128 GB</td>
+<td>รัน 70B Q4 ได้</td>
+</tr>
+<tr>
+<td><strong>M4 Max</strong></td>
+<td>128 GB</td>
+<td>M3 Max แต่เร็วกว่า 15-20%</td>
+</tr>
+<tr>
+<td><strong>M3 Pro 36GB</strong></td>
+<td>36 GB</td>
+<td>รัน 13B Q6, 34B Q4</td>
+</tr>
+</tbody>
+</table>
+<h2 id="memory-calculator-7b-model">Memory Calculator (7B Model)</h2>
+<table>
+<thead>
+<tr>
+<th>Quantization</th>
+<th>Weights</th>
+<th>+4K KV</th>
+<th>+8K KV</th>
+<th>+32K KV</th>
+<th>+128K KV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP16</td>
+<td>14 GB</td>
+<td>14.25 GB</td>
+<td>14.5 GB</td>
+<td>16 GB</td>
+<td>24 GB</td>
+</tr>
+<tr>
+<td>Q8_0</td>
+<td>7 GB</td>
+<td>7.25 GB</td>
+<td>7.5 GB</td>
+<td>9 GB</td>
+<td>17 GB</td>
+</tr>
+<tr>
+<td>Q6_K</td>
+<td>5.5 GB</td>
+<td>5.75 GB</td>
+<td>6 GB</td>
+<td>7.5 GB</td>
+<td>15.5 GB</td>
+</tr>
+<tr>
+<td>Q5_K_M</td>
+<td>4.9 GB</td>
+<td>5.15 GB</td>
+<td>5.4 GB</td>
+<td>6.9 GB</td>
+<td>14.9 GB</td>
+</tr>
+<tr>
+<td>Q4_K_M</td>
+<td>4.2 GB</td>
+<td>4.45 GB</td>
+<td>4.7 GB</td>
+<td>6.2 GB</td>
+<td>14.2 GB</td>
+</tr>
+</tbody>
+</table>
+<h2 id="use-case-hardware">Use Case → Hardware แนะนำ</h2>
+<h3 id="_2">บทเรียน / เริ่มต้น</h3>
+<ul>
+<li><strong>Mac Mini M4 24GB:</strong> $999 — เพียงพอสำหรับ 7B</li>
+<li><strong>RTX 3060 12GB:</strong> $300 — ถูกที่สุดที่ใช้ได้</li>
+</ul>
+<h3 id="developer-production">Developer / Production</h3>
+<ul>
+<li><strong>RTX 4090 24GB:</strong> $1800 — best value performance</li>
+<li><strong>Mac Studio 128GB:</strong> $8000 — unified memory เยอะ</li>
+</ul>
+<h3 id="team-enterprise">Team / Enterprise</h3>
+<ul>
+<li><strong>DGX Spark × 2:</strong> $6000 — 256GB, scalable</li>
+<li><strong>A100 80GB × 2:</strong> $20k+ — production grade</li>
+</ul>
+<h3 id="fine-tuning-research">Fine-tuning / Research</h3>
+<ul>
+<li><strong>DGX Spark:</strong> Fine-tune ได้ในเครื่อง</li>
+<li><strong>A100/H100:</strong> Training + Inference</li>
+</ul>
+<h2 id="layer-offloading-gpu-cpu">Layer Offloading — GPU + CPU ทำงานด้วยกัน</h2>
+<p>นี่คือเทคนิคสำคัญที่ทำให้ <strong>VRAM ไม่พอ แต่อยากรันโมเดลใหญ่</strong></p>
+<h3 id="concept">Concept</h3>
+<p>โมเดล 7B มี 33 layers (transformer layers)</p>
+<pre><code>Layer 1 ──► Layer 2 ──► ... ──► Layer 33
+   │          │                 │
+ GPU:15      GPU:15          GPU:3 + CPU:30
+ layers     layers           layers
+</code></pre>
+<ul>
+<li>ปกติ: แต่ละ layer ต้อง load ใน VRAM</li>
+<li>Layer offloading: โหลดแค่บาง layer ไป GPU, ที่เหลืออยู่ CPU</li>
+</ul>
+<h3 id="_3">ตัวอย่าง</h3>
+<pre><code>Model: Llama 3.1 8B Q4_K_M (~4.5 GB)
+GPU: RTX 3060 12GB
+
+แต่ถ้า model 70B Q4 (~40 GB):
+- GPU VRAM: 12 GB → load ได้แค่ 12/40 = ~30% = 21 layers
+- CPU: รัน 21 layers ที่เหลือ
+
+→ ทำให้รัน 70B ได้แม้ VRAM แค่ 12GB แต่... ช้ามาก
+</code></pre>
+<hr />
+<h1 id="part-9-run-with-lm-studio">PART 9: Run with LM Studio</h1>
+<p>วิธีง่ายที่สุดในการรัน Local LLM — ไม่ต้องใช้ command line</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash"># macOS / Windows / Linux
+1. ไปที่ https://lmstudio.ai
+2. ดาวน์โหลด version สำหรับ OS ของคุณ
+3. ติดตั้งและเปิดโปรแกรม
+4. ดาวน์โหลดโมเดลที่ต้องการ
+5. โหลดโมเดล → แชทได้เลย!
+</code></pre>
+<h2 id="step-by-step">Step by Step</h2>
+<h3 id="1">1. ดาวน์โหลดโมเดล</h3>
+<pre><code>1. Click 🔍 (Search models)
+2. ค้นหา &quot;Llama-3.1-8B-Instruct-GGUF&quot;
+3. เลือก Q4_K_M version
+4. Click Download
+</code></pre>
+<h3 id="2">2. โหลดโมเดล</h3>
+<pre><code>1. ไปที่ Model tab (sidebar)
+2. Click ที่โมเดลที่ดาวน์โหลดมา
+3. รอจนโหลดเสร็จ (VRAM usage ขึ้น)
+</code></pre>
+<h3 id="3-gpu-offload">3. ปรับ GPU Offload</h3>
+<pre><code>Slider: &quot;GPU Layers&quot; หรือ &quot;Offload&quot;
+- เลื่อนไปทางขวา = ใช้ GPU มากขึ้น = เร็วกว่า
+- เลื่อนไปทางซ้าย = ใช้ RAM มากขึ้น = VRAM ประหยัดกว่า
+
+แนะนำ: เลื่อนไป max ก่อน ถ้า OOM แล้วค่อยลด
+</code></pre>
+<h3 id="4">4. เริ่มแชท</h3>
+<pre><code>1. ไปที่ Chat tab
+2. พิมพ์คำถาม
+3. Enter
+</code></pre>
+<h2 id="lm-studio-interface-overview">LM Studio Interface Overview</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│  LM Studio                                                 │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐                      │
+│  │  🔍     │ │   💬    │ │   ⚙️    │                      │
+│  │ Search  │ │  Chat   │ │Settings │                      │
+│  └─────────┘ └─────────┘ └─────────┘                      │
+│                                                             │
+│  [Model loaded: Llama-3.1-8B-Instruct-Q4_K_M]              │
+│  GPU: ████████░░ 12GB/16GB                                 │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ User: What is machine learning?                     │   │
+│  │                                                      │   │
+│  │ Assistant: Machine learning is a subset of AI...     │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Temperature: 0.7  │  Max Tokens: 2048  │  Context: 8K    │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h2 id="advanced-settings">Advanced Settings</h2>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Recommended</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Temperature</strong></td>
+<td>Controls randomness (0 = deterministic, 1 = creative)</td>
+<td>0.7 for balanced</td>
+</tr>
+<tr>
+<td><strong>Max Tokens</strong></td>
+<td>Maximum output length</td>
+<td>2048-4096</td>
+</tr>
+<tr>
+<td><strong>Context Length</strong></td>
+<td>Maximum input + output tokens</td>
+<td>Model dependent</td>
+</tr>
+<tr>
+<td><strong>GPU Layers</strong></td>
+<td>How many layers to offload to GPU</td>
+<td>Max possible</td>
+</tr>
+<tr>
+<td><strong>Batch Size</strong></td>
+<td>Tokens processed in parallel</td>
+<td>512 for speed</td>
+</tr>
+<tr>
+<td><strong>Top-P</strong></td>
+<td>Nucleus sampling threshold</td>
+<td>0.9-0.95</td>
+</tr>
+<tr>
+<td><strong>Repeat Penalty</strong></td>
+<td>Penalize repeated tokens</td>
+<td>1.1-1.2</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="part-10-api-usage">PART 10: API Usage</h1>
+<p>LM Studio มี built-in OpenAI-compatible API — ใช้แทน OpenAI ได้เลย</p>
+<h2 id="start-api-server">Start API Server</h2>
+<pre><code>1. ไปที่ tab &quot;API&quot; ใน LM Studio
+2. Click &quot;Start Server&quot;
+3. Server รันที่ http://localhost:1234/v1/chat/completions
+</code></pre>
+<h2 id="api-endpoints">API Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/v1/chat/completions</code></td>
+<td>POST</td>
+<td>Chat completion (main endpoint)</td>
+</tr>
+<tr>
+<td><code>/v1/completions</code></td>
+<td>POST</td>
+<td>Text completion</td>
+</tr>
+<tr>
+<td><code>/v1/models</code></td>
+<td>GET</td>
+<td>List available models</td>
+</tr>
+<tr>
+<td><code>/v1/embeddings</code></td>
+<td>POST</td>
+<td>Get embeddings</td>
+</tr>
+</tbody>
+</table>
+<h2 id="api-call-example">API Call Example</h2>
+<h3 id="chat-completion">Chat Completion</h3>
+<pre><code class="language-bash">curl http://localhost:1234/v1/chat/completions \
+ -H &quot;Content-Type: application/json&quot; \
+ -H &quot;Authorization: Bearer no-key&quot; \
+ -d '{
+ &quot;model&quot;: &quot;local-model&quot;,
+ &quot;messages&quot;: [
+   {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a helpful assistant.&quot;},
+   {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello!&quot;}
+ ],
+ &quot;temperature&quot;: 0.7,
+ &quot;max_tokens&quot;: 512,
+ &quot;stream&quot;: false
+ }'
+</code></pre>
+<h3 id="response">Response</h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;chatcmpl-xxx&quot;,
+  &quot;object&quot;: &quot;chat.completion&quot;,
+  &quot;created&quot;: 1234567890,
+  &quot;model&quot;: &quot;local-model&quot;,
+  &quot;choices&quot;: [
+    {
+      &quot;index&quot;: 0,
+      &quot;message&quot;: {
+        &quot;role&quot;: &quot;assistant&quot;,
+        &quot;content&quot;: &quot;Hello! How can I help you today?&quot;
+      },
+      &quot;finish_reason&quot;: &quot;stop&quot;
+    }
+  ],
+  &quot;usage&quot;: {
+    &quot;prompt_tokens&quot;: 15,
+    &quot;completion_tokens&quot;: 12,
+    &quot;total_tokens&quot;: 27
+  }
+}
+</code></pre>
+<h2 id="code-integration">Code Integration</h2>
+<h3 id="python-openai-sdk">Python — OpenAI SDK</h3>
+<pre><code class="language-python">from openai import OpenAI
+
+client = OpenAI(
+    api_key=&quot;no-key&quot;,
+    base_url=&quot;http://localhost:1234/v1&quot;  # ต่อ local แทน OpenAI
+)
+
+response = client.chat.completions.create(
+    model=&quot;local-model&quot;,
+    messages=[
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a helpful assistant.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Explain quantum computing in simple terms.&quot;}
+    ],
+    temperature=0.7,
+    max_tokens=1000
+)
+
+print(response.choices[0].message.content)
+</code></pre>
+<h3 id="python-requests-library">Python — Requests Library</h3>
+<pre><code class="language-python">import requests
+
+response = requests.post(
+    &quot;http://localhost:1234/v1/chat/completions&quot;,
+    headers={
+        &quot;Content-Type&quot;: &quot;application/json&quot;,
+        &quot;Authorization&quot;: &quot;Bearer no-key&quot;
+    },
+    json={
+        &quot;model&quot;: &quot;local-model&quot;,
+        &quot;messages&quot;: [
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;What is 2+2?&quot;}
+        ],
+        &quot;temperature&quot;: 0.7,
+        &quot;max_tokens&quot;: 100
+    }
+)
+
+print(response.json()[&quot;choices&quot;][0][&quot;message&quot;][&quot;content&quot;])
+</code></pre>
+<h3 id="javascript-nodejs">JavaScript — Node.js</h3>
+<pre><code class="language-javascript">const response = await fetch('http://localhost:1234/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer no-key'
+    },
+    body: JSON.stringify({
+        model: 'local-model',
+        messages: [
+            { role: 'user', content: 'Hello!' }
+        ],
+        temperature: 0.7,
+        max_tokens: 512
+    })
+});
+
+const data = await response.json();
+console.log(data.choices[0].message.content);
+</code></pre>
+<blockquote>
+<p><strong>จุดเด่น:</strong> เปลี่ยนแค่ base_url กับ api_key — ใช้ code เดิมที่เคยใช้กับ OpenAI ได้เลย!</p>
+</blockquote>
+<hr />
+<h1 id="part-11-full-stack-integration">PART 11: Full Stack Integration</h1>
+<p>ต่อ Local LLM เข้ากับ Backend จริง — ทำให้เป็น API ของตัวเอง</p>
+<h2 id="system-architecture">System Architecture</h2>
+<pre><code>┌──────────┐
+│ Frontend │ React / Vue / Mobile App / Discord Bot
+└────┬─────┘
+     │ HTTPS / WebSocket
+     ▼
+┌──────────┐         ┌──────────────────────────────┐
+│ Backend  │─────────►│  LLM Server (LM Studio/Ollama) │
+│ (Your)   │ HTTP    │  http://localhost:1234/v1     │
+└────┬─────┘         └──────────────────────────────┘
+     │
+     ▼
+┌──────────┐
+│ Database │ PostgreSQL / MongoDB / SQLite
+│ (Logs)   │
+└──────────┘
+</code></pre>
+<h2 id="backend-examples">Backend Examples</h2>
+<h3 id="nodejs-express">Node.js / Express</h3>
+<pre><code class="language-javascript">const express = require('express');
+const { OpenAI } = require('openai');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const client = new OpenAI({
+    apiKey: 'no-key',
+    baseURL: 'http://localhost:1234/v1'
+});
+
+// Store conversation history
+const conversations = new Map();
+
+app.post('/chat', async (req, res) =&gt; {
+    try {
+        const { userId, message, systemPrompt } = req.body;
+
+        // Get or create conversation history
+        if (!conversations.has(userId)) {
+            conversations.set(userId, []);
+        }
+        const history = conversations.get(userId);
+
+        // Build messages
+        const messages = [
+            ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+            ...history,
+            { role: 'user', content: message }
+        ];
+
+        const response = await client.chat.completions.create({
+            model: 'local-model',
+            messages,
+            temperature: 0.7,
+            max_tokens: 1000
+        });
+
+        const reply = response.choices[0].message.content;
+
+        // Update history
+        history.push({ role: 'user', content: message });
+        history.push({ role: 'assistant', content: reply });
+
+        // Keep history manageable
+        if (history.length &gt; 20) {
+            history.splice(0, 4); // Remove oldest 2 turns
+        }
+
+        res.json({
+            reply,
+            usage: response.usage,
+            conversationId: userId
+        });
+    } catch (error) {
+        console.error('Chat error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Reset conversation
+app.post('/chat/:userId/reset', (req, res) =&gt; {
+    const { userId } = req.params;
+    conversations.delete(userId);
+    res.json({ success: true });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () =&gt; console.log(`LLM Server running on port ${PORT}`));
+</code></pre>
+<h3 id="python-fastapi">Python / FastAPI</h3>
+<pre><code class="language-python">from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Optional, List
+import openai
+import uuid
+
+app = FastAPI()
+
+openai.api_key = &quot;no-key&quot;
+openai.api_base = &quot;http://localhost:1234/v1&quot;
+
+# Store conversations
+conversations = {}
+
+class ChatRequest(BaseModel):
+    user_id: str
+    message: str
+    system_prompt: Optional[str] = None
+    temperature: float = 0.7
+    max_tokens: int = 1000
+
+class ResetRequest(BaseModel):
+    user_id: str
+
+@app.post(&quot;/chat&quot;)
+async def chat(req: ChatRequest):
+    try:
+        # Get or create conversation
+        if req.user_id not in conversations:
+            conversations[req.user_id] = []
+        history = conversations[req.user_id]
+
+        # Build messages
+        messages = []
+        if req.system_prompt:
+            messages.append({&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: req.system_prompt})
+        messages.extend(history)
+        messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: req.message})
+
+        # Call LLM
+        response = openai.ChatCompletion.create(
+            model=&quot;local-model&quot;,
+            messages=messages,
+            temperature=req.temperature,
+            max_tokens=req.max_tokens
+        )
+
+        reply = response.choices[0].message.content
+
+        # Update history
+        history.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: req.message})
+        history.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: reply})
+
+        # Keep history manageable
+        if len(history) &gt; 20:
+            history[:] = history[-16:]
+
+        return {
+            &quot;reply&quot;: reply,
+            &quot;usage&quot;: response.usage,
+            &quot;conversation_id&quot;: req.user_id
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(&quot;/chat/reset&quot;)
+async def reset_conversation(req: ResetRequest):
+    if req.user_id in conversations:
+        del conversations[req.user_id]
+    return {&quot;success&quot;: True, &quot;message&quot;: &quot;Conversation reset&quot;}
+
+@app.get(&quot;/health&quot;)
+async def health():
+    return {&quot;status&quot;: &quot;healthy&quot;, &quot;model&quot;: &quot;local-model&quot;}
+
+if __name__ == &quot;__main__&quot;:
+    import uvicorn
+    uvicorn.run(app, host=&quot;0.0.0.0&quot;, port=3000)
+</code></pre>
+<h3 id="adding-authentication">Adding Authentication</h3>
+<pre><code class="language-python">from fastapi import FastAPI, HTTPException, Depends, Header
+from typing import Optional
+
+app = FastAPI()
+
+# Simple API key validation
+API_KEYS = {
+    &quot;user1_key&quot;: &quot;user1&quot;,
+    &quot;user2_key&quot;: &quot;user2&quot;
+}
+
+def verify_api_key(x_api_key: Optional[str] = Header(None)):
+    if x_api_key not in API_KEYS:
+        raise HTTPException(status_code=401, detail=&quot;Invalid API key&quot;)
+    return API_KEYS[x_api_key]
+
+@app.post(&quot;/chat&quot;)
+async def chat(req: ChatRequest, user_id: str = Depends(verify_api_key)):
+    # Now user_id comes from the API key
+    # ... rest of chat logic
+</code></pre>
+<h3 id="adding-rate-limiting">Adding Rate Limiting</h3>
+<pre><code class="language-python">from fastapi import FastAPI, HTTPException
+from ratelimit import rate_limit
+from time import time
+
+# Simple in-memory rate limiter
+rate_limits = {}
+
+def check_rate_limit(user_id: str, limit: int = 60, window: int = 60) -&gt; bool:
+    now = time()
+    if user_id not in rate_limits:
+        rate_limits[user_id] = []
+
+    # Remove old requests
+    rate_limits[user_id] = [
+        t for t in rate_limits[user_id]
+        if now - t &lt; window
+    ]
+
+    if len(rate_limits[user_id]) &gt;= limit:
+        return False
+
+    rate_limits[user_id].append(now)
+    return True
+
+@app.post(&quot;/chat&quot;)
+async def chat(req: ChatRequest):
+    if not check_rate_limit(req.user_id):
+        raise HTTPException(status_code=429, detail=&quot;Rate limit exceeded&quot;)
+    # ... rest of chat logic
+</code></pre>
+<h2 id="production-considerations">Production Considerations</h2>
+<table>
+<thead>
+<tr>
+<th>Aspects</th>
+<th>สิ่งที่ต้องคิด</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>เพิ่ม API key หน้า backend ของตัวเอง</td>
+</tr>
+<tr>
+<td><strong>Rate Limiting</strong></td>
+<td>ป้องกัน user ส่ง request เยอะเกิน</td>
+</tr>
+<tr>
+<td><strong>Caching</strong></td>
+<td>Cache response ที่ถามซ้ำๆ (semantic cache)</td>
+</tr>
+<tr>
+<td><strong>Concurrent Users</strong></td>
+<td>vLLM รองรับได้ดีกว่า llama.cpp</td>
+</tr>
+<tr>
+<td><strong>Monitoring</strong></td>
+<td>Log token usage, latency, errors</td>
+</tr>
+<tr>
+<td><strong>Scaling</strong></td>
+<td>Horizontal scaling with load balancer</td>
+</tr>
+<tr>
+<td><strong>Fallback</strong></td>
+<td>Fallback to cloud API if local fails</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="part-12-advanced-topics">PART 12: Advanced Topics</h1>
+<p>เนื้อหาขั้นสูงสำหรับ production และ scaling</p>
+<h2 id="rag-retrieval-augmented-generation">RAG: Retrieval Augmented Generation</h2>
+<p>RAG = ดึงข้อมูลจาก external knowledge base มาต่อด้วย context</p>
+<pre><code>User: &quot;ผลงานล่าสุดของบริษัทคืออะไร?&quot;
+ │
+ ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. EMBEDDING                                              │
+│     แปลงคำถาม → vector                                     │
+│     &quot;ผลงานล่าสุดของบริษัทคืออะไร?&quot;                         │
+│      → [0.234, -0.891, 0.442, ... 1536 dims]              │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  2. RETRIEVAL                                              │
+│     ค้นหา docs ที่เกี่ยวข้องจาก vector DB                  │
+│                                                             │
+│     ChromaDB / Pinecone / Weaviate / Milvus                 │
+│      ↓                                                     │
+│     &quot;Q3 2026 product launch: AI Assistant Pro&quot;             │
+│     &quot;New partnerships with TechCorp&quot;                        │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  3. AUGMENT                                                │
+│     ใส่ context เข้าไปใน prompt                            │
+│                                                             │
+│     System: &quot;ตอบโดยอิงจาก context ที่ให้&quot;                  │
+│     Context: &quot;[1] Q3 2026: เปิดตัว AI Assistant Pro...&quot;    │
+│     Question: &quot;ผลงานล่าสุดของบริษัทคืออะไร?&quot;              │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. GENERATE                                               │
+│     ส่งไปให้ LLM ตอบ                                       │
+│     → &quot;ผลงานล่าสุดคือการเปิดตัว AI Assistant Pro ใน Q3...&quot; │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="rag-architecture">RAG Architecture</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    RAG SYSTEM                               │
+│                                                             │
+│  ┌───────────────┐      ┌─────────────────┐                  │
+│  │   Document    │      │   Embedding     │                  │
+│  │   Loader     │ ───► │   Model         │                  │
+│  │ (PDF, URL)   │      │ (nomic-embed)   │                  │
+│  └───────────────┘      └────────┬────────┘                  │
+│                                 │                           │
+│                                 ▼                           │
+│                        ┌─────────────────┐                  │
+│                        │  Vector Store   │                  │
+│                        │ (ChromaDB etc.) │                  │
+│                        └────────┬────────┘                  │
+│                                 │                           │
+│                                 ▼                           │
+│  ┌───────────────┐      ┌─────────────────┐                  │
+│  │    User       │      │   Retrieval      │                  │
+│  │    Query      │ ───► │   (top-k)       │                  │
+│  └───────────────┘      └────────┬────────┘                  │
+│                                 │                           │
+│                                 ▼                           │
+│                        ┌─────────────────┐                  │
+│                        │     LLM         │                  │
+│                        │  (Local Model)  │                  │
+│                        └─────────────────┘                  │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="rag-tools">RAG Tools</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Embedding Model</strong></td>
+<td>nomic-embed-text, bge-large-en-v1.5, text-embedding-ada-002</td>
+</tr>
+<tr>
+<td><strong>Vector Database</strong></td>
+<td>Pinecone, Weaviate, ChromaDB, Milvus, Qdrant</td>
+</tr>
+<tr>
+<td><strong>RAG Framework</strong></td>
+<td>LangChain, LlamaIndex (formerly GPT-Index), Haystack</td>
+</tr>
+<tr>
+<td><strong>Document Loader</strong></td>
+<td>PyPDF, Unstructured, Playwright (web)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="kv-cache-quantization-advanced">KV Cache Quantization (Advanced)</h2>
+<p>นอกจาก weights แล้ว KV cache ก็ quantization ได้</p>
+<table>
+<thead>
+<tr>
+<th>KV Cache Precision</th>
+<th>Memory Saved</th>
+<th>Quality Impact</th>
+<th>When to Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP16 (none)</td>
+<td>0%</td>
+<td>None</td>
+<td>VRAM เยอะ</td>
+</tr>
+<tr>
+<td>INT8</td>
+<td>50%</td>
+<td>Minimal (~1-3%)</td>
+<td>Long context</td>
+</tr>
+<tr>
+<td>INT4</td>
+<td>75%</td>
+<td>Small (~3-5%)</td>
+<td>Very long context</td>
+</tr>
+<tr>
+<td>FP8 (E5M2)</td>
+<td>50%</td>
+<td>Very small</td>
+<td>H100/Ada</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>ความสำคัญ:</strong> KV cache ของ 32K context = ~8x ของ 4K context!
+ถ้าต้องการ long context → ต้อง quantization KV cache ด้วย</p>
+</blockquote>
+<h2 id="scaling-multi-gpu-distributed">Scaling: Multi-GPU &amp; Distributed</h2>
+<h3 id="tensor-parallelism">Tensor Parallelism</h3>
+<ul>
+<li>แบ่งโมเดลไปหลาย GPU (ภายในเครื่องเดียว)</li>
+<li>vLLM: <code>--tensor-parallel-size=2</code></li>
+<li>สำหรับ 70B+ models</li>
+</ul>
+<h3 id="pipeline-parallelism">Pipeline Parallelism</h3>
+<ul>
+<li>แบ่ง layers ไปหลาย machine</li>
+<li>DeepSeek, LlamaStack</li>
+<li>ข้าม machine ได้</li>
+</ul>
+<h3 id="data-parallelism">Data Parallelism</h3>
+<ul>
+<li>เหมาะกับ Training ไม่ใช่ Inference</li>
+<li>Multiple copies of model on different GPUs</li>
+<li>Process different batches in parallel</li>
+</ul>
+<h2 id="context-length-optimization">Context Length &amp; Optimization</h2>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Tokens</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Short</td>
+<td>2K-4K</td>
+<td>Chat ทั่วไป</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>8K-16K</td>
+<td>Code review, เอกสารยาว</td>
+</tr>
+<tr>
+<td>Long</td>
+<td>32K-128K</td>
+<td>หนังสือ, codebase ใหญ่</td>
+</tr>
+<tr>
+<td>Extended</td>
+<td>200K+</td>
+<td>Research, analysis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="position-encoding-extensions">Position Encoding Extensions</h3>
+<pre><code>Problem:  Model ถูก train ด้วย context เช่น 4096 tokens
+          แต่อยากใช้ 128K tokens?
+
+Solutions:
+
+1. Positional Interpolation (PI)
+   - Scale existing position indices
+   - 4096 trained → now covers 128K
+   - Works well for moderate extension (4x)
+
+2. YaRN (Yet another RoPE extensioN)
+   - More aggressive extension
+   - Better quality at extreme lengths
+   - Recommended for 100K+ contexts
+
+3. NTK-aware Scaling
+   - Dynamic changes to attention base
+   - Minimal quality loss
+</code></pre>
+<blockquote>
+<p><strong>Memory Warning:</strong> KV cache ของ 32K = 8x ของ 4K (ทั้ง compute + storage)</p>
+</blockquote>
+<h2 id="flash-attention-2-4x">Flash Attention — เร็วขึ้น 2-4x</h2>
+<p><strong>Problem with naive attention:</strong></p>
+<pre><code>Standard attention:
+  - O(n² × d) memory complexity
+  - For n=4096, d=128:  ต้อง allocate huge intermediate matrix
+  - ทำให้ VRAM หมดเร็ว
+
+Standard:  S = Q × K^T  (n×n matrix = 16M elements for n=4096!)
+          P = softmax(S)  (16M)
+          O = P × V      (16M)
+
+Total memory for n=4096:  ~256 MB just for attention scores
+</code></pre>
+<p><strong>Flash Attention Solution:</strong></p>
+<pre><code>Algorithm: tiles the attention computation into smaller blocks
+         that fit in SRAM/L1 cache
+
+1. ไม่ต้องสร้าง full n×n matrix
+2. คำนวณทีละ block, accumulate results
+3. Memory: O(n) แทน O(n²)
+
+Speed:  2-4x faster
+Memory: 10-20x less
+
+Trade-off:  slight quality loss due to numerical precision in tiling
+</code></pre>
+<h2 id="generation-speed-ttft-tpot-throughput">Generation Speed — TTFT, TPOT, Throughput</h2>
+<h3 id="key-metrics">Key Metrics</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  TTFT  = Time To First Token                                │
+│          เวลาที่รอ token แรกหลังกด enter                    │
+│          วัด prefill speed                                  │
+│                                                             │
+│  TPOT  = Time Per Output Token                              │
+│          เวลาต่อ token ที่ generate ออกมา                  │
+│          วัด decode speed                                  │
+│          ยิ่งต่ำ = ยิ่งเร็ว                                │
+│                                                             │
+│  E2EL  = End-to-End Latency                                 │
+│          TTFT + (TPOT × num_output_tokens)                  │
+│          เวลาทั้งหมดจนได้ response                         │
+│                                                             │
+│  Thrp  = Throughput (tokens/second)                         │
+│          รวมทุก sequences                                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="ttft-time-to-first-token-example">TTFT (Time To First Token) — Example</h3>
+<p><strong>ส่วนประกอบ:</strong></p>
+<pre><code>TTFT = Tokenization time
+     + Model loading to GPU (ถ้ายังไม่ loaded)
+     + Prefill time (prompt processing)
+     + Queue wait (ถ้ามี concurrent requests)
+</code></pre>
+<p><strong>TTFT ตัวอย่าง (RTX 4090, Llama 3.2 8B Q4_K_M):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Prompt Length</th>
+<th>TTFT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100 tokens</td>
+<td>~50-100 ms</td>
+</tr>
+<tr>
+<td>500 tokens</td>
+<td>~200-400 ms</td>
+</tr>
+<tr>
+<td>2,000 tokens</td>
+<td>~800-1500 ms</td>
+</tr>
+<tr>
+<td>8,000 tokens</td>
+<td>~3-6 seconds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tpot-time-per-output-token-example">TPOT (Time Per Output Token) — Example</h3>
+<p><strong>Decode Phase — Sequential Nature:</strong></p>
+<pre><code>Token 1 ──► Token 2 ──► Token 3 ──► ... ──► Token N
+   │           │           │                   │
+  ~10ms       ~10ms       ~10ms               ~10ms
+
+แต่ละ token ต้อง:
+1. Attend to ALL previous tokens (KV cache access)
+2. Compute new KV entries
+3. Update KV cache
+4. Sample next token
+</code></pre>
+<p><strong>TPOT ตัวอย่าง (RTX 4090, Llama 3.2 8B Q4_K_M):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Batch Size</th>
+<th>TPOT (ms/token)</th>
+<th>Tokens/sec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>8-12</td>
+<td>80-120</td>
+</tr>
+<tr>
+<td>4</td>
+<td>15-25</td>
+<td>40-65</td>
+</tr>
+<tr>
+<td>8</td>
+<td>30-50</td>
+<td>20-33</td>
+</tr>
+<tr>
+<td>16</td>
+<td>60-100</td>
+<td>10-16</td>
+</tr>
+</tbody>
+</table>
+<h2 id="batch-size-deep-dive">Batch Size — Deep Dive</h2>
+<h3 id="batch-size">Batch Size คืออะไร</h3>
+<pre><code>Batch Size = จำนวน sequences ที่ประมวลผลพร้อมกัน
+
+Batch 1:  [Seq A] → process → output A
+Batch 4:  [Seq A] ─┐
+          [Seq B] ─┼─→ process together → outputs A,B,C,D
+          [Seq C] ─┤
+          [Seq D] ─┘
+</code></pre>
+<h3 id="dynamic-batching-continuous-batching">Dynamic Batching (Continuous Batching)</h3>
+<pre><code>Problem with static batching:
+  - Wait for all sequences in batch to finish
+  - Short responses block long responses
+  - Inefficient
+
+Continuous Batching (Iteration-level scheduling):
+  - Add new requests to batch as slots free up
+  - No waiting for &quot;batch&quot; to fill
+  - Maximizes GPU utilization
+
+  Time ─────────────────────────────────────────────────────►
+
+  Step 1: [Req A_____________] [Req B__] [Req C__________]
+  Step 2: [Req A_____________] [Req B__] [Req D__] [Req C__________]
+  Step 3: [Req A_____________] [Req D__] [Req E_____] [Req C__________]
+
+  When Req B finishes → immediately slot in Req D, E, etc.
+</code></pre>
+<h3 id="optimal-batch-size-recommendations">Optimal Batch Size Recommendations</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Batch Size</th>
+<th>TPOT</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interactive Chat</td>
+<td>1-4</td>
+<td>10-20ms</td>
+<td>Real-time, low latency</td>
+</tr>
+<tr>
+<td>Document Processing</td>
+<td>4-16</td>
+<td>30-60ms</td>
+<td>Summarization, RAG</td>
+</tr>
+<tr>
+<td>Batch Processing</td>
+<td>32-64</td>
+<td>100-200ms</td>
+<td>Offline, maximize throughput</td>
+</tr>
+<tr>
+<td>Very Long Context</td>
+<td>1-2</td>
+<td>50-100ms</td>
+<td>32K+ tokens</td>
+</tr>
+</tbody>
+</table>
+<h2 id="concurrent-users-multi-user-architecture">Concurrent Users — Multi-User Architecture</h2>
+<h3 id="concurrency-vs-parallelism">Concurrency vs Parallelism</h3>
+<pre><code>Single user (serial):
+  User A ──► [generate 10s] ──► User A ──► [generate 10s] ...
+  Total: 30s for 3 users (sequential)
+
+Concurrent (parallel):
+  User A ──► [────10s────] ──►
+  User B ──► [────10s────] ──►    Total: 10s for 3 users
+  User C ──► [────10s────] ──►
+
+Same GPU, different time slices
+</code></pre>
+<h3 id="how-concurrency-affects-performance">How Concurrency Affects Performance</h3>
+<pre><code>User Count    Batch Size    TPOT (ms)    TTFT (ms)    Throughput
+──────────────────────────────────────────────────────────────────
+1            1             10           200          100 tok/s
+5            5             25           250          200 tok/s
+10           10            50           350          200 tok/s
+20           20            100          500          200 tok/s
+──────────────────────────────────────────────────────────────────
+
+Observation:
+  - TPOT increases linearly with users
+  - Throughput stays relatively constant
+  - TTFT increases slowly (queue wait + prefill)
+</code></pre>
+<h3 id="user-capacity-by-hardware">User Capacity by Hardware</h3>
+<table>
+<thead>
+<tr>
+<th>Hardware</th>
+<th>Concurrent Users</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RTX 4090 24GB</td>
+<td>3-5</td>
+<td>Continuous batching</td>
+</tr>
+<tr>
+<td>RTX 3090 24GB</td>
+<td>3-5</td>
+<td>Continuous batching</td>
+</tr>
+<tr>
+<td>A100 40GB</td>
+<td>8-15</td>
+<td>Continuous batching + longer context</td>
+</tr>
+<tr>
+<td>A100 80GB</td>
+<td>15-30</td>
+<td>Large batches, 128K context</td>
+</tr>
+<tr>
+<td>Multi-GPU (4×4090)</td>
+<td>15-25</td>
+<td>Tensor parallel</td>
+</tr>
+<tr>
+<td>Multi-GPU (8×A100)</td>
+<td>50-100+</td>
+<td>Tensor parallel + multi-instance</td>
+</tr>
+</tbody>
+</table>
+<h2 id="offloading-to-cpuram-or-nvme">Offloading to CPU/RAM or NVMe</h2>
+<h3 id="why-offload">Why Offload?</h3>
+<pre><code>Problem:
+  Model 70B Q4 = ~40 GB
+  GPU VRAM: 24 GB
+
+  → Can't fit model fully in GPU!
+
+Solutions:
+  1. CPU offload:  Some layers run on CPU (slow)
+  2. NVMe offload: SSD acts as extra memory (very slow but more capacity)
+  3. Horizontal scaling:  Multiple GPUs (expensive)
+</code></pre>
+<h3 id="layer-offloading-strategy">Layer Offloading Strategy</h3>
+<pre><code>Full GPU:     [GPU: 32 layers]           → Fastest
+Partial CPU:  [GPU: 24] + [CPU: 8]       → Slower
+Heavy CPU:    [GPU: 8]  + [CPU: 24]      → Slow
+NVMe hybrid:  [GPU: 8]  + [RAM: 16] + [NVMe: 8] → Very slow
+</code></pre>
+<h3 id="offloading-performance-comparison">Offloading Performance Comparison</h3>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Speed (tok/s)</th>
+<th>Latency (ms/tok)</th>
+<th>Memory Capacity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full GPU (24GB)</td>
+<td>80-120</td>
+<td>8-12</td>
+<td>24GB VRAM</td>
+</tr>
+<tr>
+<td>GPU + CPU (RAM)</td>
+<td>15-30</td>
+<td>30-60</td>
+<td>64GB+ system</td>
+</tr>
+<tr>
+<td>CPU only (fast)</td>
+<td>5-10</td>
+<td>100-200</td>
+<td>Unlimited</td>
+</tr>
+<tr>
+<td>CPU only (slow)</td>
+<td>1-3</td>
+<td>300-1000</td>
+<td>Unlimited</td>
+</tr>
+<tr>
+<td>NVMe offload</td>
+<td>0.5-1</td>
+<td>1000-2000</td>
+<td>Terabytes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="why-local-llm-is-inevitable">Why Local LLM is Inevitable</h2>
+<h3 id="1-cloud-ai">1. Cloud AI ราคาจะพุ่งสูง</h3>
+<p>ปัจจุบัน OpenAI, Anthropic แบกต้นทุนให้เราเพื่อเก็บฐานผู้ใช้ แต่หลังโปรโมชันหมด ราคาจะพุ่งสูง</p>
+<h3 id="2-version-control">2. Version Control ของตัวเอง</h3>
+<p>Cloud อัปเดตเมื่อไหร่ก็ไม่สนใจเรา — Local ถ้าจูนจนเจอ workflow ที่ใช่ ก็ freeze ใช้ไปยาวๆ ได้</p>
+<h3 id="3-privacy-no-rate-limiting">3. Privacy &amp; No Rate Limiting</h3>
+<p>ข้อมูลไม่ต้องส่งไป server ใคร ใช้ได้ 24/7 ไม่มีลิมิต</p>
+<hr />
+<h1 id="bonus-dgx-spark-uma-deep-dive">Bonus: DGX Spark &amp; UMA Deep Dive</h1>
+<blockquote>
+<p>จากประสบการณ์จริง — DGX Spark vs Mac Studio</p>
+</blockquote>
+<h2 id="why-unified-memory-architecture-uma-matters">Why Unified Memory Architecture (UMA) Matters</h2>
+<p>ก่อน UMA การรัน Local LLM ต้องพึ่ง GPU แยกจาก RAM ระบบ ทำให้ต้อง <strong>Offload</strong> ข้อมูลไปมาระหว่าง VRAM และ RAM — เกิดคอขวด (bottleneck) ที่ Memory Bandwidth</p>
+<h3 id="traditional-discrete-gpu">Traditional (Discrete GPU)</h3>
+<pre><code> CPU                         GPU
+(RAM) ◄─────────────────────►(VRAM)
+ 128GB     bottleneck         24GB
+ 200GB/s    32GB/s            1000GB/s
+
+If model &gt; VRAM: Offload to RAM = SLOW!
+</code></pre>
+<h3 id="unified-memory-architecture-uma">Unified Memory Architecture (UMA)</h3>
+<pre><code>┌──────────────────────────────┐
+│         SYSTEM                │
+│  ┌────────────────────────┐   │
+│  │   CPU + GPU Cores     │   │
+│  └────────────────────────┘   │
+│            │                   │
+│  ┌────────────────────────┐   │
+│  │    UNIFIED MEMORY      │   │
+│  │    128GB - 512GB       │   │
+│  │    No offloading!      │   │
+│  └────────────────────────┘   │
+└──────────────────────────────┘
+
+✅ No bottleneck between compute and memory
+✅ Can address massive memory spaces
+✅ Simpler software stack
+</code></pre>
+<h2 id="three-uma-contenders">Three UMA Contenders</h2>
+<h3 id="apple-m-series">Apple M Series 🍎</h3>
+<p><strong>จุดเด่น:</strong>
+- Memory bandwidth สูงมาก (~800GB/s)
+- Power efficient ไม่ร้อน
+- RAM สูงสุด 512GB
+- ใช้งานทั่วไปได้ด้วย</p>
+<p><strong>จุดด้อย:</strong>
+- พลังประมวลผลต่ำกว่า DGX Spark
+- ไม่มี NVFP4
+- Limited CUDA ecosystem</p>
+<h3 id="nvidia-dgx-spark">NVIDIA DGX Spark ⚡</h3>
+<p><strong>จุดเด่น:</strong>
+- 1,000+ TOPS พลังสูงมาก
+- <strong>NVFP4 Support!</strong>
+- Fine-tune ได้ในเครื่อง
+- Scalable: ต่อ 2 เครื่องได้</p>
+<p><strong>จุดด้อย:</strong>
+- RAM จำกัด 128GB (ต่อเครื่อง)
+- ร้อนมาก (85°C ขึ้นไปง่าย)
+- ต้องใช้ Terminal/SSH</p>
+<h3 id="amd-strix-halo">AMD Strix Halo 🔴</h3>
+<p><strong>จุดเด่น:</strong>
+- ราคาถูกที่สุด
+- UMA architecture
+- หา Notebook ได้ง่าย</p>
+<p><strong>จุดด้อย:</strong>
+- Memory bandwidth ต่ำสุด
+- พลังต่ำที่สุด
+- ไม่มี NVFP4</p>
+<blockquote>
+<p><strong>AMD Strix Halo:</strong> ข้ามไปได้เลยถ้าต้องการพลังสูง เพราะไม่ว่าจะเทียบด้านไหนก็สู้ 2 ตัวบนไม่ได้</p>
+</blockquote>
+<h2 id="dgx-spark-vs-mac-studio-head-to-head">DGX Spark vs Mac Studio: Head-to-Head</h2>
+<table>
+<thead>
+<tr>
+<th>Spec</th>
+<th>DGX Spark</th>
+<th>Mac Studio (M4 Ultra)</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Memory Bandwidth</strong></td>
+<td>273 GB/s</td>
+<td>800+ GB/s</td>
+<td>🏆 Mac</td>
+</tr>
+<tr>
+<td><strong>Compute (TOPS)</strong></td>
+<td>1,000+</td>
+<td>~32</td>
+<td>🏆 DGX Spark</td>
+</tr>
+<tr>
+<td><strong>Max RAM</strong></td>
+<td>128GB (ต่อเครื่อง)<br>256GB+ (ต่อกัน 2 เครื่อง)</td>
+<td>512GB</td>
+<td>🏆 Mac (但แพงมาก)</td>
+</tr>
+<tr>
+<td><strong>NVFP4 Support</strong></td>
+<td>✅ มี</td>
+<td>❌ ไม่มี</td>
+<td>🏆 DGX Spark</td>
+</tr>
+<tr>
+<td><strong>Ease of Use</strong></td>
+<td>ต้อง SSH / Terminal</td>
+<td>Plug and Play</td>
+<td>🏆 Mac</td>
+</tr>
+<tr>
+<td><strong>Fine-tune ในเครื่อง</strong></td>
+<td>✅ ทำได้เลย</td>
+<td>⚠️ ทำได้แต่ช้า</td>
+<td>🏆 DGX Spark</td>
+</tr>
+<tr>
+<td><strong>Image/Video Generation</strong></td>
+<td>✅ CUDA optimized</td>
+<td>⚠️ จำกัดกว่า</td>
+<td>🏆 DGX Spark</td>
+</tr>
+<tr>
+<td><strong>Scalability</strong></td>
+<td>🔗 ต่อ 2 เครื่องได้<br>สูงสุด 256GB</td>
+<td>❌ ต่อไม่ได้</td>
+<td>🏆 DGX Spark</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pre-fill-vs-token-generation">Pre-fill vs Token Generation: ไม่ใช่แค่ "เร็วกว่า"</h2>
+<p>LLM inference แบ่งเป็น 2 ช่วงหลัก ซึ่งแต่ละช่วงต้องการทรัพยากรต่างกัน:</p>
+<h3 id="phase-1-pre-fill-prompt-processing">PHASE 1: PRE-FILL (Prompt Processing)</h3>
+<ul>
+<li>Input: "โค้ดทั้งหมด + Context + คำถามของผม"</li>
+<li>Process: ประมวลผล Prompt ทั้งหมดก่อนเริ่มตอบ</li>
+<li>Output: Time to First Token (TTFT)</li>
+<li><strong>🏆 DGX Spark ชนะ!</strong> ประมวลผลได้เร็วกว่าเห็นๆ</li>
+<li>ใช้: <strong>COMPUTE POWER</strong> เป็นหลัก (TOPS)</li>
+</ul>
+<h3 id="phase-2-token-generation-decoding">PHASE 2: TOKEN GENERATION (Decoding)</h3>
+<ul>
+<li>Input: เริ่มรับ token ทีละตัวจนครบ</li>
+<li>Process: ทำนาย token ถัดไป → พิมพ์ → ทำนายต่อ</li>
+<li>Output: Tokens per Second (TPS)</li>
+<li><strong>🏆 Mac Studio ตีตื้นกลับมา!</strong> พิมพ์เร็วกว่า</li>
+<li>ใช้: <strong>MEMORY BANDWIDTH</strong> เป็นหลัก (GB/s)</li>
+</ul>
+<h3 id="_4">ความหมายในการเลือกใช้งานจริง</h3>
+<table>
+<thead>
+<tr>
+<th>Use Case</th>
+<th>Heavy ช่วงไหน?</th>
+<th>แนะนำ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Code ที่มี Context ยาว (Few-shot + CoT)</td>
+<td>Pre-fill (DGX Spark ได้เปรียบ)</td>
+<td>🏆 DGX Spark</td>
+</tr>
+<tr>
+<td>แปล Codebase ใหญ่ๆ</td>
+<td>Pre-fill (DGX Spark ได้เปรียบ)</td>
+<td>🏆 DGX Spark</td>
+</tr>
+<tr>
+<td>General chat สั้นๆ</td>
+<td>Token Gen (Mac ได้เปรียบ)</td>
+<td>🏆 Mac</td>
+</tr>
+<tr>
+<td>งานเอกสาร สรุปบทความ</td>
+<td>ขึ้นกับ Context length</td>
+<td>Context ยาว = DGX Spark</td>
+</tr>
+<tr>
+<td>RAG (Retrieval Augmented Gen)</td>
+<td>Pre-fill (ดึง context เยอะ)</td>
+<td>🏆 DGX Spark</td>
+</tr>
+<tr>
+<td>Interactive coding (ให้ตอบทีละบรรทัด)</td>
+<td>Token Gen (Mac ได้เปรียบ)</td>
+<td>🏆 Mac</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Pro Tip:</strong> EXO Lab ทดสอบแล้วว่าเอา DGX Spark ทำ Pre-fill แล้วส่งต่อให้ Mac Studio ทำ Token Generation จะได้ความเร็วสูงสุด แต่ต้องมีทุน 2 เครื่องก่อน 😅</p>
+</blockquote>
+<h2 id="nvfp4-dgx-spark">NVFP4: พระเอกของ DGX Spark</h2>
+<p>นี่คือเหตุผลหลักที่เลือก DGX Spark และเป็นสิ่งที่ค่ายอื่น <strong>ไม่มี!</strong></p>
+<h3 id="_5">หลักการ</h3>
+<p>NVIDIA ทำให้ DGX Spark รัน 4-bit quantization โดยรักษาความแม่นยำได้เกือบเท่า FP16!</p>
+<h3 id="accuracy">เปรียบเทียบความแม่นยำ (Accuracy)</h3>
+<table>
+<thead>
+<tr>
+<th>Precision</th>
+<th>ความแม่นยำ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP16 (Baseline)</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>FP8 (8-bit)</td>
+<td>~99.9%</td>
+</tr>
+<tr>
+<td>FP4 (4-bit ธรรมดา)</td>
+<td>~92-97%</td>
+</tr>
+<tr>
+<td><strong>NVFP4 (4-bit NVIDIA)</strong></td>
+<td><strong>~99.5%</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>💡 <strong>NVFP4 แม่นกว่า FP4 ธรรมดา ถึง ~4.5% เลยทีเดียว! แถมใกล้เคียง FP8 มาก!</strong></p>
+</blockquote>
+<h3 id="nvfp4">NVFP4 ทำงานยังไง?</h3>
+<p>เหมือนเราได้ Zip ไฟล์มาแล้วใช้งานได้เลย ไม่ต้อง Unzip ก่อน! มันถูกออกแบบมาให้รัน Native บน Hardware ระดับต่ำ</p>
+<table>
+<thead>
+<tr>
+<th>Precision</th>
+<th>ความแม่นยำ</th>
+<th>DGX Spark</th>
+<th>Mac Studio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP16 (native)</td>
+<td>100%</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>FP8 / INT8</td>
+<td>~99.9%</td>
+<td>✅ Native</td>
+<td>✅ (แต่ไม่ Native)</td>
+</tr>
+<tr>
+<td>FP4 ธรรมดา</td>
+<td>~92-97%</td>
+<td>✅</td>
+<td>⚠️ ต้องใช้ FP8 แทน</td>
+</tr>
+<tr>
+<td><strong>NVFP4</strong></td>
+<td><strong>~99.5%</strong></td>
+<td>✅ <strong>Native</strong></td>
+<td>❌ ไม่มี</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>ข้อจำกัด:</strong> NVFP4 ต้องการโมเดลที่ถูก Quantize เป็น NVFP4 format ซึ่งยังไม่แพร่หลายเท่า GGUF Q4_K_M แต่ community ก็เริ่มมีโมเดล NVFP4 เพิ่มขึ้นเรื่อยๆ</p>
+</blockquote>
+<h2 id="dgx-spark">DGX Spark: ข้อดี ข้อด้อย ที่ต้องรู้</h2>
+<h3 id="_6">✅ ข้อดี</h3>
+<ul>
+<li><strong>พลังประมวลผลเหนือชั้น</strong> — Supercomputer ขนาดเล็กที่ราคาจับต้องได้</li>
+<li><strong>NVFP4 Support</strong> — ได้ความแม่นยำสูงสุดที่ 4-bit</li>
+<li><strong>Fine-tune ได้ในเครื่อง</strong> — เคยต้องเช่า Colab ตอนนี้ไม่ต้องแล้ว!</li>
+<li><strong>Scalable</strong> — ซื้อ 2 เครื่องมาต่อกันได้เลย (128+128=256GB)</li>
+<li><strong>DGX OS + CUDA AI Stack</strong> — เซ็ตอัพง่าย มี software stack พร้อม</li>
+<li><strong>Image/Video Generation</strong> — CUDA optimized ทำให้เร็วกว่า Mac Studio มาก</li>
+</ul>
+<h3 id="_7">❌ ข้อด้อย</h3>
+<ul>
+<li><strong>ต้องใช้ Terminal/SSH</strong> — ใครไม่ถนัด Command line ไม่แนะนำ</li>
+<li><strong>ร้อนมาก!</strong> — อุณหภูมิขึ้น 85°C ได้ง่าย ต้องดูแล Airflow</li>
+<li><strong>RAM จำกัด 128GB</strong> — รันโมเดลใหญ่มากๆ ไม่ได้ตัวเดียว (ต้องต่อ 2 เครื่อง)</li>
+<li><strong>ต้องปรับตั้งค่าเยอะ</strong> — Kernel panic, OOM, Thermal issues ต้องรู้วิธีแก้</li>
+<li><strong>Memory bandwidth ต่ำกว่า Mac</strong> — Token generation ช้ากว่า</li>
+</ul>
+<blockquote>
+<p><strong>ประสบการณ์จริง:</strong> ช่วงแรก Kernel panic Hard Shutdown ไป 3-4 รอบ (OOM 3 ครั้ง + Thermal 1 ครั้ง) — ต้องศึกษา log และปรับแต่งเยอะกว่าจะลงตัว</p>
+</blockquote>
+<h2 id="dgx-spark-vs-mac-studio">DGX Spark vs Mac Studio: งบเท่าไหร่ดี?</h2>
+<table>
+<thead>
+<tr>
+<th>สถานการณ์</th>
+<th>แนะนำ</th>
+<th>เหตุผล</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>งบจำกัด แต่อยากได้พลัง</td>
+<td>DGX Spark</td>
+<td>ได้ TOPS สูงสุดในราคา</td>
+</tr>
+<tr>
+<td>ไม่ถนัด Terminal</td>
+<td>Mac Studio</td>
+<td>ใช้ได้เลย ไม่ต้องตั้งค่าอะไร</td>
+</tr>
+<tr>
+<td>ต้องการ RAM 128GB+ ราคาถูก</td>
+<td>DGX Spark × 2 ต่อกัน</td>
+<td>256GB ในราคาประหยัดกว่า Mac Studio 512GB</td>
+</tr>
+<tr>
+<td>ต้องการ RAM 512GB+</td>
+<td>Mac Studio 512GB</td>
+<td>DGX Spark ทำไม่ได้ (ต้อง 4 เครื่อง = แพงมาก)</td>
+</tr>
+<tr>
+<td>ใช้งานทั่วไป + เขียนโค้ดเป็นหลัก</td>
+<td>Mac Studio M4 Max 256GB</td>
+<td>เพียงพอ + ใช้ง่าย + token gen เร็ว</td>
+</tr>
+<tr>
+<td>Fine-tune + Image/Video Gen</td>
+<td>DGX Spark</td>
+<td>CUDA ecosystem + พลังสูง</td>
+</tr>
+<tr>
+<td>Heavy Prompt + Long Context</td>
+<td>DGX Spark</td>
+<td>Pre-fill เร็วกว่าเยอะ</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Mac Mini / Mac Studio Max:</strong> ข้ามเลยถ้าไปสาย Mac แล้วต้องจัด Studio ตัว Ultra RAM 256GB ขึ้นไปเท่านั้น! ตัว Max RAM 64GB ทำอะไรได้ไม่เต็มศักยภาพ</p>
+</blockquote>
+<h2 id="quantization-ram">Quantization: ยัดโมเดลใหญ่ลง RAM น้อย</h2>
+<p>ถ้าอยากรันโมเดลใหญ่อย่าง <strong>Qwen3.5 122B</strong> (ขนาด ~245GB FP16) บน RAM 128GB ต้อง Quantize:</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>ขนาด (122B model)</th>
+<th>DGX Spark (128GB)</th>
+<th>Mac Studio 256GB</th>
+<th>ความแม่นยำ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP16</td>
+<td>~245 GB</td>
+<td>❌</td>
+<td>❌</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>FP8 / INT8</td>
+<td>~132 GB</td>
+<td>⚠️ รัน 1 เครื่องไม่ได้</td>
+<td>✅</td>
+<td>~99.9%</td>
+</tr>
+<tr>
+<td>FP4 ธรรมดา</td>
+<td>~80 GB</td>
+<td>✅</td>
+<td>✅</td>
+<td>~92-95%</td>
+</tr>
+<tr>
+<td><strong>NVFP4</strong></td>
+<td>~80 GB</td>
+<td>✅ <strong>Native</strong></td>
+<td>❌ ไม่มี</td>
+<td><strong>~99.5%</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>เปรียบเทียบ:</strong> NVFP4 บน DGX Spark (1 เครื่อง) = ความแม่นยำ ~99.5% ที่ 80GB
+FP8 บน Mac Studio 256GB = ความแม่นยำ ~99.9% ที่ 132GB</p>
+<p><strong>DGX Spark ใช้ RAM น้อยกว่า 40% แต่แม่นยำใกล้เคียง!</strong></p>
+</blockquote>
+<h2 id="dgx-spark-variants-msi-vs-nvidia-founder-edition">DGX Spark Variants: MSI vs NVIDIA Founder Edition</h2>
+<table>
+<thead>
+<tr>
+<th>แง่</th>
+<th>NVIDIA Founder</th>
+<th>MSI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>สถาปัตยกรรม</td>
+<td>เหมือนกัน</td>
+<td>เหมือนกัน</td>
+</tr>
+<tr>
+<td>Vapor Chamber</td>
+<td>❌ ธรรมดา</td>
+<td>✅ ครอบคลุมกว่า</td>
+</tr>
+<tr>
+<td>Housing/ Cooling</td>
+<td>ร้อนกว่า 5-10%</td>
+<td>ดีกว่า</td>
+</tr>
+<tr>
+<td>ราคา</td>
+<td>อาจถูกกว่า</td>
+<td>อาจแพงกว่าเล็กน้อย</td>
+</tr>
+<tr>
+<td>แนะนำ</td>
+<td>ถ้าราคาต่างกันมาก</td>
+<td>ถ้าซื้อใหม่</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>รีวิวจริง:</strong> อุณหภูมิ MSI ต่ำกว่า NVIDIA Founder Edition ราวๆ 5-10°C ซึ่งทำให้ performance ดีกว่าและเครื่องทนทานกว่าในระยะยาว</p>
+</blockquote>
+<hr />
+<h1 id="complete-formulas-reference">Complete Formulas Reference</h1>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    KEY FORMULAS                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. WEIGHT SIZE                                            │
+│     weight_size = params × bytes_per_param                  │
+│     Example: 7B × 0.5 bytes (Q4) = 3.5 GB                  │
+│                                                             │
+│  2. KV CACHE SIZE                                         │
+│     kv_size = 2 × n_layers × n_kv_heads                    │
+│              × seq_len × head_dim × bytes                   │
+│     Example: 2×32×8×4096×128×2 = 512 MB (GQA, FP16)       │
+│                                                             │
+│  3. ATTENTION FLOP (prefill)                              │
+│     flops = 2 × n_tokens × n_layers × hidden_dim × seq      │
+│             (approximation)                                 │
+│                                                             │
+│  4. ATTENTION FLOP (decode per token)                     │
+│     flops = 2 × n_layers × hidden_dim × (2 × total_ctx)     │
+│             (attention scales with total context)           │
+│                                                             │
+│  5. GPU LAYER FIT                                         │
+│     layers_gpu = (vram - kv_overhead) / (model_size/layers  │
+│                 + kv_per_layer + activations_per_layer)     │
+│                                                             │
+│  6. THROUGHPUT (tokens/second)                            │
+│     throughput = 1 / TPOT                                  │
+│     Or: batch_size × tokens / total_time                    │
+│                                                             │
+│  7. TTFT ESTIMATE                                         │
+│     ttft = prefill_time + queue_wait                        │
+│     prefill ≈ n_prompt_tokens × layers × flops_per_token    │
+│                                                             │
+│  8. MEMORY FOR SEQUENCE (total)                           │
+│     total = model_weights + kv_cache + activations          │
+│           + output_buffer + overhead                        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h1 id="quick-reference">Quick Reference</h1>
+<h2 id="memory-requirements-summary-7b-model">Memory Requirements Summary (7B Model)</h2>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP16</td>
+<td>~14 GB</td>
+</tr>
+<tr>
+<td>Q8_0</td>
+<td>~7 GB</td>
+</tr>
+<tr>
+<td>Q6_K</td>
+<td>~5.5 GB</td>
+</tr>
+<tr>
+<td>Q5_K_M</td>
+<td>~4.9 GB</td>
+</tr>
+<tr>
+<td><strong>Q4_K_M</strong></td>
+<td><strong>~4.2 GB</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="popular-models-2025-2026">Popular Models 2025-2026</h2>
+<p><strong>Best for Coding:</strong>
+- Qwen-2.5-Coder-7B-Instruct
+- Deepseek-Coder-6.7B-Instruct
+- Codestral-22B
+- Llama-3.1-70B-Instruct</p>
+<p><strong>Best for Chat/General:</strong>
+- Llama-3.1-8B-Instruct
+- Mistral-7B-Instruct-v0.3
+- Qwen-2.5-7B-Instruct
+- Phi-4 14B</p>
+<p><strong>Best for Long Context:</strong>
+- Llama-3.1-8B-Instruct (128K)
+- Command R7B (128K)
+- Qwen-2.5-72B-Instruct (128K)</p>
+<p><strong>Best for Multimodal:</strong>
+- Llama-3.2-90B-Vision
+- Gemma-3-27B-IT</p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<p><strong>Topics for future updates:</strong>
+- Fine-tuning locally with Axolotl / LoRA
+- Deployment with Docker + Kubernetes
+- Monitoring with Prometheus + Grafana
+- Security hardening
+- Cost optimization</p>
+<hr />
+<blockquote>
+<p><strong>Document Version:</strong> 4.1<br />
+<strong>Last Updated:</strong> March 2026</p>
+</blockquote>
+    </div>
+</body>
+</html>
